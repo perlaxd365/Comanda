@@ -10,34 +10,98 @@ if (isset($pdf)) {
 	}
 }
 
-
-
-
 class mainModel
 {
 	public static function conectar()
 	{
 
-		$enlace = new PDO(SGBD, USER, PASS);
-		$enlace->exec("set names utf8");
-		return $enlace;
+		$conexion = odbc_connect($GLOBALS['DNS'], $GLOBALS['USUARIO'], $GLOBALS['CLAVE']);
+		return $conexion;
 	}
-	public static function moneyFormat($price,$curr) {
+
+	public static function desconectar()
+	{
+
+		$conexion = odbc_close(self::conectar());
+		return $conexion;
+		
+	}
+
+	public static function reconectar($dns,$usuario,$clave)
+	{
+
+		$conexion = self::desconectar();
+		$conexion = odbc_connect($dns, $usuario, $clave);
+		return $conexion;
+	}
+	
+	public static function moneyFormat($price, $curr)
+	{
 		$currencies['EUR'] = array(2, ',', '.');        // Euro
 		$currencies['ESP'] = array(2, ',', '.');        // Euro
 		$currencies['USD'] = array(2, '.', ',');        // US Dollar
 		$currencies['COP'] = array(2, ',', '.');        // Colombian Peso
 		$currencies['CLP'] = array(0,  '', '.');        // Chilean Peso
-	
+
 		return number_format($price, ...$currencies[$curr]);
 	}
 
+	public static function encriptar_power_builder($clave)
+	{
+		$ls_letra = '';
+		$ls_cadena = '';
+		$j = 0;
+
+		$completarCadena = '$A';
+
+		$ls_cad2 = "NE[\G-BRP.U}tL!HpY@s)e'Jzbl+`Q^$completarCadena/ S82y]gwoM_,|(anf;%Vd5Z9*#=<>Oc:X71qD6jvTr?0FkCWIu4ih{mx3K";
+		$ls_cad1 = "ABCDEFGHIJKLMNO !#$%'()*+,-./01234;<=>?@PQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}56789:";
+
+		for ($i = 0; $i < strlen((trim($clave))); $i++) {
+			$ls_letra = substr($clave, $i, 1);
+			$j = 1;
+			while ($ls_letra != substr($ls_cad2, $j, 1) && $j <= strlen($ls_cad2)) {
+				$j++;
+			}
+			$ls_cadena .= substr($ls_cad1, $j, 1);
+		}
+		return $ls_cadena;
+	}
+
+	public static function desencriptar_power_builder($clave)
+	{
+
+		
+		$ls_letra = '';
+		$ls_cadena = '';
+		$j = 0;
+
+		$completarCadena = '$A';
+
+		$ls_cad1 = "NE[\G-BRP.U}tL!HpY@s)e'Jzbl+`Q^$completarCadena/ S82y]gwoM_,|(anf;%Vd5Z9*#=<>Oc:X71qD6jvTr?0FkCWIu4ih{mx3K";
+		$ls_cad2 = "ABCDEFGHIJKLMNO !#$%'()*+,-./01234;<=>?@PQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}56789:";
+
+		for ($i = 0; $i < strlen((trim($clave))); $i++) {
+			$ls_letra = substr($clave, $i, 1);
+			$j = 1;
+			while ($ls_letra != substr($ls_cad2, $j, 1) && $j <= strlen($ls_cad2)) {
+				$j++;
+			}
+			$ls_cadena .= substr($ls_cad1, $j, 1);
+		}
+		return $ls_cadena;
+
+		
+	}
+
+
 	public static function ejecutar_consulta_simple($consulta)
 	{
-		$respuesta = self::conectar()->prepare($consulta);
-		$respuesta->execute();
+		$respuesta = odbc_exec(self::conectar(), $consulta);
 		return $respuesta;
 	}
+
+
 
 
 	public static function encryption($string)
@@ -166,6 +230,4 @@ class mainModel
 		}
 		return $alerta;
 	}
-
-	
 }

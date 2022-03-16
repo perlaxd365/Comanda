@@ -22,3 +22,6 @@
 	<script src="<?php echo SERVERURL?>vistas/js/main.js"></script>
 	
 	<script src="<?php echo SERVERURL?>vistas/js/setDataTable.js"></script>
+  <script src="<?php echo SERVERURL;?>vistas/js/sweetalert2.min.js"></script>
+  
+  

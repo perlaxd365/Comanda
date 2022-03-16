@@ -29,6 +29,9 @@
 	<link rel="stylesheet" href="<?php echo SERVERURL?>vistas/css/main.css">
 	<!-- responsive -->
 	<link rel="stylesheet" href="<?php echo SERVERURL?>vistas/css/responsive.css">
+	
+<link rel="stylesheet" href="<?php echo SERVERURL;?>vistas/css/sweetalert2.css">
+	
   
 </head>
 

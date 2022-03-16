@@ -11,7 +11,7 @@
 								<div class="card">
 									<div class="card-body">
 										<h5 class="card-title">Nuevos Pedidos</h5>
-										<p class="card-text">Iniciar un nuevo pedido</p>
+										<p class="card-text">Iniciar Nuevo Pedido</p>
 										<a href="#" class="btn btn-primary">Acceder</a>
 									</div>
 								</div>

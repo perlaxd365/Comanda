@@ -10,10 +10,16 @@ class loginModelo extends mainModel
 	
 	protected function iniciar_sesion_modelo($datos){
 
-		$sql=mainModel::conectar()->prepare("SELECT * FROM usuario WHERE usuario=:Usuario  AND password=:Clave ;");
-		$sql->bindParam('Usuario',$datos["Usuario"]);
-		$sql->bindParam('Clave',$datos["Clave"]);
-		$sql->execute();
+		$consulta=odbc_prepare(mainModel::conectar(),"SELECT * FROM segu_usuario WHERE  usua_clave=? AND usua_agente='SI';");
+		$sql = odbc_execute($consulta, array($datos["clave"]));
+		$sql = odbc_fetch_array($consulta);
+		return $sql;
+	}
+	protected function contar_filas_modelo($datos){
+
+		$consulta=odbc_prepare(mainModel::conectar(),"SELECT * FROM segu_usuario WHERE  usua_clave=? AND usua_agente='SI';");
+		$sql = odbc_execute($consulta, array($datos["clave"]));
+		$sql = odbc_num_rows($consulta);
 		return $sql;
 	}
 

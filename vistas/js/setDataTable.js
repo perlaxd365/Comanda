@@ -1,4 +1,4 @@
-$(".boton").click(function () {
+$("boton").click(function () {
 
   var valores = "";
   var a=0;

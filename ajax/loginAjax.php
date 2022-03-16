@@ -9,7 +9,7 @@
 	    echo $logout->cerrar_sesion_controlador();
 		
 	}else{
-		session_start(['name'=>'LEDMEN']);
+		session_start(['name'=>'COMANDA']);
 		session_destroy();
 		echo '<script> window.location.href="'.SERVERURL.'"</script>';
 	}

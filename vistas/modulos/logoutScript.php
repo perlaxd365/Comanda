@@ -10,7 +10,7 @@
 				type: 'warning',
 				showCancelButton: true,
 				confirmButtonColor: '#03A9F4',
-				cancelButtonColor: '#F44336',
+				cancelButtonColor: '#A5A5A5',
 				confirmButtonText: '<i class="zmdi zmdi-run"></i>Si, Cerrar!',
 				cancelButtonText: '<i class="zmdi zmdi-close-circle"></i> No, Cancelar!'
 			}).then(function () {

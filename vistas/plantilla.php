@@ -6,9 +6,23 @@
   
 
 </html>
+					<style type="text/css"> 
+        thead tr th { 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #ffffff;
+        }
+    
+        .table-responsive { 
+            height:200px;
+            overflow:scroll;
+        }
+    </style>
 
 <?php
 
+session_start(['name' => 'COMANDA']);
 $peticionAjax = false;
 require_once "./controladores/vistasControlador.php";
 
@@ -27,9 +41,16 @@ if ($vistasR == "login" || $vistasR == "404") {
 
 
 
+  include "./controladores/loginControlador.php";
+  $lc = new loginControlador();
+  if (!isset($_SESSION['token_comanda'])) {
+    echo $lc->forzar_cierre_sesion_controlador();
+    header("location:" . SERVERURL . "");
+  }
 ?>
 
-<?php include "modulos/nav.php"; ?>
+<?php include "modulos/nav.php";
+?>
 	<!-- end header --><!-- breadcrumb-section -->
 <div class="breadcrumb-section breadcrumb-bg" style="margin-top: -330px;">
     <div class="container">
@@ -43,6 +64,8 @@ if ($vistasR == "login" || $vistasR == "404") {
       </div>
     </div>
   </div>
+  
+  
 
 
 
@@ -68,6 +91,7 @@ if ($vistasR == "login" || $vistasR == "404") {
 
 
   <?php include "modulos/script.php"; ?>
+  <?php include "modulos/logoutScript.php"; ?>
 <?php
 }
 ?>

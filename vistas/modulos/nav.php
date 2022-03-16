@@ -29,7 +29,7 @@
 								</li>
 								<li>
 									<div class="header-icons">
-										<a class="shopping-cart" href="index.php"><i class="fas fa-door-closed"></i>   Salir</a>
+										<a class="btn-exit-system dropdown-item" href="<?php echo $lc->encryption($_SESSION['token_comanda']);?>"><i class="fas fa-door-closed"></i>   Salir</a>
 									</div>
 								</li>
 							</ul>

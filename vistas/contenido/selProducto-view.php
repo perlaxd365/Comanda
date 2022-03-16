@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <div class="cart-section mt-100 mb-150">
 	<div class="container">
 
@@ -14,46 +17,83 @@
 			</div>
 		</div>
 		<br>
+
+		<script>
+			$(function() {
+				$('#datosBusqueda').submit(function(ev) {
+
+					ev.preventDefault();
+					$.ajax({
+						type: $('#datosBusqueda').attr('method'),
+						url: $('#datosBusqueda').attr('action'),
+						data: $('#datosBusqueda').serialize(),
+						beforeSend: function() {
+							document.getElementById("loading").style.display = "block";
+						},
+						success: function(data) {
+							document.getElementById("loading").style.display = "none";
+							$("#RespuestaAjax").attr("disabled", false);
+							$("#RespuestaAjax").html(data);
+						}
+					});
+				});
+
+
+
+			});
+		</script>
 		<div class="row">
 			<div class="col-lg-8 col-md-12">
 				<div class="cart-table-wrap">
 
-					<nav class="navbar navbar-light bg-light">
+					<form id="datosBusqueda" name="datosBusqueda" method="POST" action="<?php echo SERVERURL ?>ajax/productoAjax.php" enctype="multipart/form-data">
 
-						<div class="col-md-4 mb-3">
-							<div class="input-group">
-								<div class="input-group-prepend">
-									<span class="input-group-text" id="validationTooltipUsernamePrepend">Línea</span>
-								</div><select class="custom-select">
-									<option selected>Seleccionar</option>
-									<option value="1">Uno</option>
-									<option value="2">Dos</option>
-									<option value="3">trees</option>
-								</select>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="input-group">
-								<div class="input-group-prepend">
-									<span class="input-group-text" id="validationTooltipUsernamePrepend">Sub Línea</span>
-								</div><select class="custom-select">
-									<option selected>Seleccionar</option>
-									<option value="1">Uno</option>
-									<option value="2">Dos</option>
-									<option value="3">trees</option>
-								</select>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="input-group">
-								<div class="input-group-prepend">
-									<span class="input-group-text" id="validationTooltipUsernamePrepend">Buscar</span>
+						<nav class="navbar navbar-light bg-light">
+
+							<div class="col-md-3 mb-3">
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text" id="validationTooltipUsernamePrepend">Línea</span>
+									</div>
+									<select onchange="listar_sublinea(this);" name="buscar_linea" class="custom-select">
+										<option selected>Seleccionar Línea</option>
+
+
+										<?php require_once './controladores/productoControlador.php';
+										$producto = new productoControlador();
+
+										echo $producto->listar_prod_linea_controlador();
+
+										?>
+									</select>
 								</div>
-
-								<input class="form-control btn-mg" type="search" placeholder="Buscar" aria-label="Search">
 							</div>
-						</div>
-					</nav>
+							<div class="col-md-3 mb-3">
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text" id="validationTooltipUsernamePrepend">Sub Línea</span>
+									</div>
+									<select id="datos_sublinea" name="buscar_sublinea" class="custom-select">
+										<option selected>Seleccionar Sublínea</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3 mb-3">
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text" id="validationTooltipUsernamePrepend">Buscar</span>
+									</div>
+
+									<input class="form-control btn-mg" name="busqueda" type="search" placeholder="Buscar" aria-label="Search">
+								</div>
+							</div>
+							<div class="col-md-3 mb-3">
+								<div class="input-group">
+									<button type="submit" class="btn btn-outline-primary btn-block">Buscar</button>
+								</div>
+							</div>
+						</nav>
+					</form>
 
 					<br>
 					<style>
@@ -68,145 +108,14 @@
 							background-color: #ffffff;
 						}
 					</style>
-					<div style="overflow-y:scroll;height:300px;">
-						<table style="height: 200px;" class="table tabla-productos" id="tabla-productos">
-							<thead class="thead-dark">
-								<tr>
-									<th scope="col" class="text-center">ID</th>
-									<th scope="col" class="text-center">Producto</th>
-									<th scope="col" class="text-center">Precio S/</th>
-									<th scope="col"></th>
-									<th scope="col"></th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td colspan="1" id="id">1</td>
-									<td id="nombre">POLLO A LA BRASA CON TODAS SUS CREMAS</td>
-									<td id="precio">60.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
 
-								</tr>
-								<tr>
-									<td id="id">2</td>
-									<td id="nombre">1 INKACOLA DE 1L (SIN AZUCAR)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">3</td>
-									<td id="nombre">Menú de McDonalds, Burger King o similar</td>
-									<td id="precio">30.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">4</td>
-									<td id="nombre">Agua (botella de 33 cl)</td>
-									<td id="precio">2.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">5</td>
-									<td id="nombre">Café Cappuccino</td>
-									<td id="precio">15.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">6</td>
-									<td id="nombre">Comida para 2 personas</td>
-									<td id="precio">44.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">7</td>
-									<td id="nombre">Perrier Water (botella pequeña 0,33l)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">8</td>
-									<td id="nombre">Bollo de pan blanco fresco (500g)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">9</td>
-									<td id="nombre">Queso (1kg)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">10</td>
-									<td id="nombre">Redondo de ternera (1kg)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">11</td>
-									<td id="nombre">Salchichas (1kg)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">12</td>
-									<td id="nombre">Requesón (1 kg)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">13</td>
-									<td id="nombre">Arroz (blanco) (1kg)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">14</td>
-									<td id="nombre">Pechugas de pollo (sin piel y sin espinas) - (1 kg)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-								<tr>
-									<td id="id">15</td>
-									<td id="nombre">Botella de vino (gama media)</td>
-									<td id="precio">10.00</td>
-									<td class="boton"><button type="button" class="btn btn-outline-dark">Agregar</button></td>
-
-								</tr>
-							</tbody>
-						</table>
+					<div id="loading" style="display: none;">
+						<img width="80" class="rounded mx-auto d-block" height="50" src="<?php echo SERVERURL ?>vistas/images/loading.gif" alt="">
 					</div>
 
+					<div class="RespuestaAjax" id="RespuestaAjax"></div>
 
-					<div class="row">
-						<div class="container">
-							<div class="row">
-								<div class="col-lg-12 text-center">
-									<div class="pagination-wrap">
-										<ul>
-											<li><a href="#">Anterior</a></li>
-											<li><a href="#">1</a></li>
-											<li><a class="active" href="#">2</a></li>
-											<li><a href="#">3</a></li>
-											<li><a href="#">Siguiente</a></li>
-										</ul>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+
 				</div>
 			</div>
 
@@ -221,11 +130,12 @@
 					<div id="hola" style="display: none;">
 						<div class="alert alert-danger" role="alert">Se eliminó correctamente</div>
 					</div>
-					<table class="table total-table">
+					<table class="table total-table" id="tablaDetalle">
 						<thead class="total-table-head thead-dark">
 							<tr class="table-total-row">
 								<th>ID</th>
 								<th>Producto</th>
+								<th>Obs</th>
 								<th>Cantidad</th>
 								<th>Acción</th>
 							</tr>
@@ -254,7 +164,7 @@
 </div>
 <!-- search area -->
 
-
+<br>
 
 </body>
 
@@ -285,3 +195,84 @@
 		</div>
 	</div>
 </div>
+
+<script>
+	function listar_sublinea(id) {
+
+		var id_linea = id.value;
+		$.ajax({
+			url: "<?php echo SERVERURL; ?>ajax/productoAjax.php",
+			method: "POST",
+			data: {
+				"id_linea": id_linea
+			},
+			success: function(respuesta) {
+				$("#datos_sublinea").attr("disabled", false);
+				$("#datos_sublinea").html(respuesta);
+			}
+		})
+	}
+
+
+
+	function vistaprevia(nrotabla) {
+
+		//variables
+		var valores = "";
+		var a = 0;
+		var contador = 0;
+		var id_producto = new Array();
+		var nombreDetalle = new Array();
+		var precioDetalle = new Array();
+
+		// capturamos la fila que seleccionamos y llenamos el arreglo que creamos con push
+
+		$('#tabla-productos tr').each(function() {
+			id_producto.push($(this).find("#id_producto").html());
+			nombreDetalle.push($(this).find("#nombre").html());
+			precioDetalle.push($(this).find("#precio").html());
+		});
+
+		//Contador para mostrar
+		$('#tablaDetalle tr').each(function() {
+			contador++;
+		});
+
+		//
+		$("table tr").each(function() {
+			a++;
+		})
+
+
+		var div = document.createElement('tr');
+		div.className = "total-data";
+		div.setAttribute("id", contador);
+		div.innerHTML = '<td hidden id="id_pro">' + id_producto[nrotabla] + '</td><td>' + contador + '</td><td><strong>' + nombreDetalle[nrotabla] + ' <br> (S/ ' + precioDetalle[nrotabla] + ')</td><td><button type="button" onclick="" class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></strong></td><td><input style="height:40px; width : 50px;"   type="number" class="form-control" value="1"></td><td><div class="row"><button type="button"  onclick="eliminar(' + contador + ')" class="btn btn-outline-danger">x</button>  <button type="button"  class="btn btn-outline-success">✓</button></div></td>';
+		document.getElementById('nuevoform').appendChild(div);
+		document.getElementById("alerta").style.display = "block";
+
+
+		$('#alerta').fadeIn();
+		setTimeout(function() {
+			$("#alerta").fadeOut();
+		}, 1000);
+
+	};
+
+	function eliminar(n) {
+		jQuery("tr").remove(`#${n}`);
+		contador = contador - 1;
+		if (contador <= 0) {
+			contador = 0;
+		}
+
+		document.getElementById("hola").style.display = "block";
+
+
+		$('#hola').fadeIn();
+		setTimeout(function() {
+			$("#hola").fadeOut();
+		}, 1000);
+
+	}
+</script>
