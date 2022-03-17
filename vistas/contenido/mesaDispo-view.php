@@ -7,7 +7,7 @@
 					<h3 class="font-weight-bold text-center">Disponibilidad de Mesa</h3><br>
 
 					<select onchange="listarMesas(this)" class="custom-select">
-						<option selected>Abrir para seleccionar Piso</option>
+						<option value="" selected>Abrir para seleccionar Piso</option>
 
 						<?php
 
@@ -51,56 +51,6 @@
 
 
 	<script>
-		// Funciones
-		function agregarCurso(e) {
-			e.preventDefault();
-
-
-			if (e.target.classList.contains('agregar-carrito')) {
-				const cursoSeleccionado = e.target.parentElement.parentElement;
-				leerDatosCurso(cursoSeleccionado);
-			}
-
-		}
-
-
-		function leerDatosCurso(curso) {
-			// console.log(curso);
-
-			// Crear un objeto con el contenido del curso actual
-			const infoCurso = {
-				imagen: curso.querySelector('img').src,
-				titulo: curso.querySelector('h4').textContent,
-				precio: curso.querySelector('.precio span').textContent,
-				id: curso.querySelector('a').getAttribute('data-id'),
-				cantidad: 1
-			}
-
-			// Revisa si un elemento ya existe en el carrito
-			const existe = articulosCarrito.some(curso => curso.id === infoCurso.id);
-			if (existe) {
-				// Actualizamos la cantidad
-				const cursos = articulosCarrito.map(curso => {
-					if (curso.id === infoCurso.id) {
-						curso.cantidad++;
-						return curso; // retorna el objeto actualizado
-					} else {
-						return curso; // retorna los objetos que no son los duplicados
-					}
-				});
-				articulosCarrito = [...cursos];
-			} else {
-				// Agrega elementos al arreglo de carrito
-				articulosCarrito = [...articulosCarrito, infoCurso];
-			}
-
-
-
-
-			console.log(articulosCarrito);
-
-			carritoHTML();
-		}
 
 		function listarMesas(id) {
 
@@ -110,6 +60,7 @@
 				method: "POST",
 				data: {
 					"idMesa": id,
+					"opcion": "listar"
 				},
 				error: function(){
 					$("#listarMesa").attr("disabled", false);

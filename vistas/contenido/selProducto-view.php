@@ -3,14 +3,30 @@
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <div class="cart-section mt-100 mb-150">
 	<div class="container">
+		<?php
+
+		if (isset($_POST["piso"]) && isset($_POST["mesa"]) && isset($_POST["nroHombres"]) && isset($_POST["nroMujeres"]) && isset($_POST["nroNinios"])) {
+
+			$piso = $_POST["piso"];
+			$mesa = $_POST["mesa"];
+			$nroHombres = $_POST["nroHombres"];
+			$nroMujeres = $_POST["nroMujeres"];
+			$nroNinios = $_POST["nroNinios"];
+		}
+		?>
+		<input hidden name="piso" value="<?php echo $piso ?>">
+		<input hidden name="mesa" value="<?php echo $mesa ?>">
+		<input hidden name="nroHombres" value="<?php echo $nroHombres ?>">
+		<input hidden name="nroMujeres" value="<?php echo $nroMujeres ?>">
+		<input hidden name="nroNinios" value="<?php echo $nroNinios ?>">
 
 		<div class="card">
 			<div class="card-header">
-				Registro de Nuevo Pedido
+				<strong>Registro de Nuevo Pedido</strong>
 			</div>
 			<div class="card-body">
 				<blockquote class="blockquote mb-0">
-					<p>Seleccionar pedido para la Mesa (4) del Piso (1)</p>
+					<p>Seleccionar pedido para la Mesa (<?php echo $mesa ?>) del Piso (<?php echo $piso ?>)</p>
 					<!-- 
 					<footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer> -->
 				</blockquote>
@@ -42,8 +58,17 @@
 
 			});
 		</script>
+
+
+
+
+
+
 		<div class="row">
 			<div class="col-lg-8 col-md-12">
+				<div class="card-header">
+					<strong>Búsqueda de Producto</strong>
+				</div>
 				<div class="cart-table-wrap">
 
 					<form id="datosBusqueda" name="datosBusqueda" method="POST" action="<?php echo SERVERURL ?>ajax/productoAjax.php" enctype="multipart/form-data">
@@ -55,7 +80,7 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text" id="validationTooltipUsernamePrepend">Línea</span>
 									</div>
-									<select onchange="listar_sublinea(this);" name="buscar_linea" class="custom-select">
+									<select onchange="listar_sublinea(this); limpiarTabla();" name="buscar_linea" class="custom-select">
 										<option selected>Seleccionar Línea</option>
 
 
@@ -73,8 +98,8 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text" id="validationTooltipUsernamePrepend">Sub Línea</span>
 									</div>
-									<select id="datos_sublinea" name="buscar_sublinea" class="custom-select">
-										<option selected>Seleccionar Sublínea</option>
+									<select id="datos_sublinea" onchange="limpiarTabla();" name="buscar_sublinea" class="custom-select">
+										<option selected value="">Seleccionar Sublínea</option>
 									</select>
 								</div>
 							</div>
@@ -84,7 +109,7 @@
 										<span class="input-group-text" id="validationTooltipUsernamePrepend">Buscar</span>
 									</div>
 
-									<input class="form-control btn-mg" name="busqueda" type="search" placeholder="Buscar" aria-label="Search">
+									<input class="form-control btn-mg" onkeypress="limpiarTabla()" onkeydown="limpiarTabla()" onkeyup="limpiarTabla()" name="busqueda" type="search" placeholder="Buscar" aria-label="Search">
 								</div>
 							</div>
 							<div class="col-md-3 mb-3">
@@ -113,6 +138,9 @@
 						<img width="80" class="rounded mx-auto d-block" height="50" src="<?php echo SERVERURL ?>vistas/images/loading.gif" alt="">
 					</div>
 
+					<div class="card-header">
+						<strong>Productos</strong>
+					</div>
 					<div class="RespuestaAjax" id="RespuestaAjax"></div>
 
 
@@ -122,14 +150,26 @@
 			<div class="col-lg-4">
 				<div class="total-section">
 
-					<h6 class="font-weight-bold">Detalle Pedido</h6>
-					<label><TEXT>Eliminar(x), Cortesía (✓)</TEXT></label>
 					<div id="alerta" style="display: none;">
 						<div class="alert alert-success" role="alert">Se agregó pedido correctamente</div>
 					</div>
 					<div id="hola" style="display: none;">
 						<div class="alert alert-danger" role="alert">Se eliminó correctamente</div>
 					</div>
+					<div id="alertObservacion" style="display: none;">
+						<div class="alert alert-success" role="alert">Se agregó observación</div>
+					</div>
+					<div id="cortesiaAlerta" style="display: none;">
+						<div class="alert alert-success" role="alert">Se agregó como cortesía</div>
+					</div>
+					<div id="quitarcortesiaAlerta" style="display: none;">
+						<div class="alert alert-danger" role="alert">Se eliminó cortesia</div>
+					</div>
+					<div class="card-header">
+						<strong>Detalle de Pedido</strong> <br>
+						Eliminar <TEXT style="color: red;">(x)</TEXT> , Cortesía <TEXT style="color: green;"> (✓)</TEXT>
+					</div>
+					<label></label>
 					<table class="table total-table" id="tablaDetalle">
 						<thead class="total-table-head thead-dark">
 							<tr class="table-total-row">
@@ -154,7 +194,9 @@
 					<div class="">
 						<a href="javascript:history.back()" class="boxed-btn black">Cancelar</a>
 						<a href="<?php echo SERVERURL ?>verPedido" class="boxed-btn black">Ver Pedido</a>
-						<a href="<?php echo SERVERURL ?>home" class="boxed-btn">Enviar</a>
+						<a onclick="enviarDatos();" class="boxed-btn">Enviar</a>
+						<div id="respuesta"></div>
+
 					</div>
 				</div>
 
@@ -185,18 +227,50 @@
 				<form class="form-inline">
 					<div class="form-group col-12">
 						<label for="inputPassword2" class="sr-only">Observaciones</label>
-						<textarea class="form-control" id="exampleFormControlTextarea1" rows="3" cols="100"></textarea>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-						<button type="button" class="btn btn-primary">Guardar</button>
+
+						<div id="modal-body">
+
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+							<button type="button" id="observacionUP" onclick="actualizar(this.value);" class="btn btn-primary" data-toggle="modal" data-target="#modalObservacion">Guardar</button>
 				</form>
 			</div>
 		</div>
 	</div>
 </div>
 
-<script>
+
+<script type="text/javascript">
+	function mostrar(id) {
+		var x = $("#observacion" + id).val();
+
+		var str = '<textarea class="form-control" id="UP' + id + '" rows="3" cols="50">' + x + '</textarea>';
+
+		$("#observacionUP").val(id);
+		$("#modal-body").html(str);
+
+	}
+
+	function actualizar(idUp) {
+		var texto = $("#UP" + idUp).val();
+		$("#observacion" + idUp).val(texto);
+
+
+		document.getElementById("alertObservacion").style.display = "block";
+
+
+		$('#alertObservacion').fadeIn();
+		setTimeout(function() {
+			$("#alertObservacion").fadeOut();
+		}, 1000);
+	}
+
+	function limpiarTabla() {
+
+		document.getElementById("RespuestaAjax").innerHTML = "";
+	}
+
 	function listar_sublinea(id) {
 
 		var id_linea = id.value;
@@ -238,18 +312,21 @@
 			contador++;
 		});
 
-		//
-		$("table tr").each(function() {
-			a++;
-		})
-
-
 		var div = document.createElement('tr');
 		div.className = "total-data";
 		div.setAttribute("id", contador);
-		div.innerHTML = '<td hidden id="id_pro">' + id_producto[nrotabla] + '</td><td>' + contador + '</td><td><strong>' + nombreDetalle[nrotabla] + ' <br> (S/ ' + precioDetalle[nrotabla] + ')</td><td><button type="button" onclick="" class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></strong></td><td><input style="height:40px; width : 50px;"   type="number" class="form-control" value="1"></td><td><div class="row"><button type="button"  onclick="eliminar(' + contador + ')" class="btn btn-outline-danger">x</button>  <button type="button"  class="btn btn-outline-success">✓</button></div></td>';
+		div.innerHTML += '<td hidden id="id_pro">' + id_producto[nrotabla] + '</td>';
+		div.innerHTML += '<td>' + contador + '</td>';
+		div.innerHTML += '<td><strong>' + nombreDetalle[nrotabla] + ' <br> (S/ ' + precioDetalle[nrotabla] + ')</td>';
+		div.innerHTML += '<td><button type="button" onclick="mostrar(' + contador + ')" class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></strong> <input type="text" hidden value="" name="observacion[]"  id="observacion' + contador + '"></td>';
+		//aqui armo el formulario para enviar
+		div.innerHTML += '<td><input name="cantidad[]" style="height:40px; width : 50px;" type="number" class="form-control" value="1"></td>';
+		div.innerHTML += '<input hidden name="id_producto[]" value="' + id_producto[nrotabla] + '">';
+		div.innerHTML += '<td><div class="row"><button type="button"  onclick="alertaEliminar(); eliminar(' + contador + ');" class="btn btn-outline-danger">x</button><button type="button" id="cortesia_btn' + contador + '" name="cortesia[]" class="btn btn-outline-success" onclick="cortesia(' + contador + ');">✓</button></div></td>';
 		document.getElementById('nuevoform').appendChild(div);
 		document.getElementById("alerta").style.display = "block";
+
+		//datos : id_producto[] , cantidad[], observacion[], cortesia[]
 
 
 		$('#alerta').fadeIn();
@@ -264,15 +341,131 @@
 		contador = contador - 1;
 		if (contador <= 0) {
 			contador = 0;
+
+
+
 		}
 
+
+	}
+
+	function cortesia(contador) {
+
+
+		var valor = $("#cortesia_btn" + contador).val();
+		if (valor === "1") {
+
+			document.getElementById("cortesia_btn" + contador).style.backgroundColor = "white";
+			$("#cortesia_btn" + contador).val(0);
+			//aleerta
+			document.getElementById("quitarcortesiaAlerta").style.display = "block";
+			$('#quitarcortesiaAlerta').fadeIn();
+			setTimeout(function() {
+				$("#quitarcortesiaAlerta").fadeOut();
+			}, 1000);
+		} else {
+
+			document.getElementById("cortesia_btn" + contador).style.backgroundColor = "green";
+			$("#cortesia_btn" + contador).val(1);
+			//aleerta
+			document.getElementById("cortesiaAlerta").style.display = "block";
+			$('#cortesiaAlerta').fadeIn();
+			setTimeout(function() {
+				$("#cortesiaAlerta").fadeOut();
+			}, 1000);
+		}
+
+
+	}
+
+	function alertaEliminar() {
 		document.getElementById("hola").style.display = "block";
-
-
 		$('#hola').fadeIn();
 		setTimeout(function() {
 			$("#hola").fadeOut();
 		}, 1000);
+	}
+
+	function enviarDatos() {
+		//datos array : id_producto[] , cantidad[], observacion[], cortesia[] 
+		// datos : piso, mesa, nroHombres, nroMujeres, nroNinios
+
+		var piso = document.getElementsByName("piso")[0].value;
+		var mesa = document.getElementsByName("mesa")[0].value;
+		var nroHombres = document.getElementsByName("nroHombres")[0].value;
+		var nroMujeres = document.getElementsByName("nroMujeres")[0].value;
+		var nroNinios = document.getElementsByName("nroNinios")[0].value;
+		//creamos array
+		var arrayProducto = new Array();
+		var arrayCantidad = new Array();
+		var arrayObservacion = new Array();
+		var arrayCortesia = new Array();
+		//referenciamos los inputs
+		var id_producto = $("input[name='id_producto\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
+		var cantidad = $("input[name='cantidad\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
+		var observacion = $("input[name='observacion\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
+		var cortesia = $("button[name='cortesia\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
+
+		for (let index = 0; index < id_producto.length; index++) {
+
+			var itemId_producto = {};
+			itemId_producto = id_producto[index];
+
+			var itemCantidad = {};
+			itemCantidad = cantidad[index];
+
+			var itemObservacion = {};
+			itemObservacion = observacion[index];
+
+			var itemCortesia = {};
+			itemCortesia = cortesia[index];
+
+			arrayProducto.push(itemId_producto);
+			arrayCantidad.push(itemCantidad);
+			arrayObservacion.push(itemObservacion);
+			arrayCortesia.push(itemCortesia);
+
+		}
+
+		var url = "ajax/comandaAjax.php";
+		var productoJson = JSON.stringify(arrayProducto);
+		var cantidadJson = JSON.stringify(arrayCantidad);
+		var observacionJson = JSON.stringify(arrayObservacion);
+		var cortesiaJson = JSON.stringify(arrayCortesia);
+
+
+
+		$.ajax({
+			type: 'POST',
+			url: url,
+			data: {
+				producto: productoJson,
+				cantidad: cantidadJson,
+				observacion: observacionJson,
+				cortesia: cortesiaJson,
+				piso: piso,
+				mesa: mesa,
+				nroHombres: nroHombres,
+				nroMujeres: nroMujeres,
+				nroNinios: nroNinios
+			},
+			error: function() {
+				$("#respuesta").attr("disabled", false);
+				$("#respuesta").html(respuesta);
+			},
+			success: function(respuesta) {
+				$("#respuesta").attr("disabled", false);
+				$("#respuesta").html(respuesta);
+			}
+		})
 
 	}
 </script>
