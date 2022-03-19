@@ -32,7 +32,7 @@ class productoControlador extends productoModelo
 			echo '<option value="' . $rows["ssli_codigo"] . '">' . utf8_encode($rows["ssli_descripcion"]) . '</option>';
 		}
 		if ($contador == 0) {
-			echo ' <option >Línea no contiene Sublínea</option>';
+			echo ' <option value="">Línea no contiene Sublínea</option>';
 		}
 	}
 	public static function listar_productos_controlador($linea_busqueda, $sublinea_busqueda, $busqueda)

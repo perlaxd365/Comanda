@@ -19,6 +19,7 @@
 		<input hidden name="nroHombres" value="<?php echo $nroHombres ?>">
 		<input hidden name="nroMujeres" value="<?php echo $nroMujeres ?>">
 		<input hidden name="nroNinios" value="<?php echo $nroNinios ?>">
+		<input hidden name="comper_codigo" value="<?php echo $_SESSION["comper_codigo"] ?>">
 
 		<div class="card">
 			<div class="card-header">
@@ -169,7 +170,6 @@
 						<strong>Detalle de Pedido</strong> <br>
 						Eliminar <TEXT style="color: red;">(x)</TEXT> , Cortesía <TEXT style="color: green;"> (✓)</TEXT>
 					</div>
-					<label></label>
 					<table class="table total-table" id="tablaDetalle">
 						<thead class="total-table-head thead-dark">
 							<tr class="table-total-row">
@@ -387,85 +387,101 @@
 	}
 
 	function enviarDatos() {
-		//datos array : id_producto[] , cantidad[], observacion[], cortesia[] 
-		// datos : piso, mesa, nroHombres, nroMujeres, nroNinios
-
-		var piso = document.getElementsByName("piso")[0].value;
-		var mesa = document.getElementsByName("mesa")[0].value;
-		var nroHombres = document.getElementsByName("nroHombres")[0].value;
-		var nroMujeres = document.getElementsByName("nroMujeres")[0].value;
-		var nroNinios = document.getElementsByName("nroNinios")[0].value;
-		//creamos array
-		var arrayProducto = new Array();
-		var arrayCantidad = new Array();
-		var arrayObservacion = new Array();
-		var arrayCortesia = new Array();
-		//referenciamos los inputs
-		var id_producto = $("input[name='id_producto\\[\\]']").map(function() {
-			return $(this).val();
-		}).get();
-		var cantidad = $("input[name='cantidad\\[\\]']").map(function() {
-			return $(this).val();
-		}).get();
-		var observacion = $("input[name='observacion\\[\\]']").map(function() {
-			return $(this).val();
-		}).get();
-		var cortesia = $("button[name='cortesia\\[\\]']").map(function() {
-			return $(this).val();
-		}).get();
-
-		for (let index = 0; index < id_producto.length; index++) {
-
-			var itemId_producto = {};
-			itemId_producto = id_producto[index];
-
-			var itemCantidad = {};
-			itemCantidad = cantidad[index];
-
-			var itemObservacion = {};
-			itemObservacion = observacion[index];
-
-			var itemCortesia = {};
-			itemCortesia = cortesia[index];
-
-			arrayProducto.push(itemId_producto);
-			arrayCantidad.push(itemCantidad);
-			arrayObservacion.push(itemObservacion);
-			arrayCortesia.push(itemCortesia);
-
-		}
-
-		var url = "ajax/comandaAjax.php";
-		var productoJson = JSON.stringify(arrayProducto);
-		var cantidadJson = JSON.stringify(arrayCantidad);
-		var observacionJson = JSON.stringify(arrayObservacion);
-		var cortesiaJson = JSON.stringify(arrayCortesia);
+		swal({
+			title: 'Confirmación',
+			text: '¿Estás seguro que quieres enviar el pedido?',
+			type: 'question',
+			showCancelButton: true,
+			confirmButtonText: 'Si',
+			cancelButtonText: 'No'
+		}).then(function() {
 
 
 
-		$.ajax({
-			type: 'POST',
-			url: url,
-			data: {
-				producto: productoJson,
-				cantidad: cantidadJson,
-				observacion: observacionJson,
-				cortesia: cortesiaJson,
-				piso: piso,
-				mesa: mesa,
-				nroHombres: nroHombres,
-				nroMujeres: nroMujeres,
-				nroNinios: nroNinios
-			},
-			error: function() {
-				$("#respuesta").attr("disabled", false);
-				$("#respuesta").html(respuesta);
-			},
-			success: function(respuesta) {
-				$("#respuesta").attr("disabled", false);
-				$("#respuesta").html(respuesta);
+			//datos array : id_producto[] , cantidad[], observacion[], cortesia[] 
+			// datos : piso, mesa, nroHombres, nroMujeres, nroNinios
+
+			var piso = document.getElementsByName("piso")[0].value;
+			var mesa = document.getElementsByName("mesa")[0].value;
+			var nroHombres = document.getElementsByName("nroHombres")[0].value;
+			var nroMujeres = document.getElementsByName("nroMujeres")[0].value;
+			var nroNinios = document.getElementsByName("nroNinios")[0].value;
+			var comper_codigo = document.getElementsByName("comper_codigo")[0].value;
+			//creamos array
+			var arrayProducto = new Array();
+			var arrayCantidad = new Array();
+			var arrayObservacion = new Array();
+			var arrayCortesia = new Array();
+			//referenciamos los inputs
+			var id_producto = $("input[name='id_producto\\[\\]']").map(function() {
+				return $(this).val();
+			}).get();
+			var cantidad = $("input[name='cantidad\\[\\]']").map(function() {
+				return $(this).val();
+			}).get();
+			var observacion = $("input[name='observacion\\[\\]']").map(function() {
+				return $(this).val();
+			}).get();
+			var cortesia = $("button[name='cortesia\\[\\]']").map(function() {
+				return $(this).val();
+			}).get();
+
+			for (let index = 0; index < id_producto.length; index++) {
+
+				var itemId_producto = {};
+				itemId_producto = id_producto[index];
+
+				var itemCantidad = {};
+				itemCantidad = cantidad[index];
+
+				var itemObservacion = {};
+				itemObservacion = observacion[index];
+
+				var itemCortesia = {};
+				itemCortesia = cortesia[index];
+
+				arrayProducto.push(itemId_producto);
+				arrayCantidad.push(itemCantidad);
+				arrayObservacion.push(itemObservacion);
+				arrayCortesia.push(itemCortesia);
+
 			}
-		})
+
+			var url = "ajax/comandaAjax.php";
+			var productoJson = JSON.stringify(arrayProducto);
+			var cantidadJson = JSON.stringify(arrayCantidad);
+			var observacionJson = JSON.stringify(arrayObservacion);
+			var cortesiaJson = JSON.stringify(arrayCortesia);
+
+
+
+			$.ajax({
+				type: 'POST',
+				url: url,
+				data: {
+					producto: productoJson,
+					cantidad: cantidadJson,
+					observacion: observacionJson,
+					cortesia: cortesiaJson,
+					piso: piso,
+					mesa: mesa,
+					nroHombres: nroHombres,
+					nroMujeres: nroMujeres,
+					nroNinios: nroNinios,
+					comper_codigo: comper_codigo
+				},
+				error: function() {
+					$("#respuesta").attr("disabled", false);
+					$("#respuesta").html(respuesta);
+				},
+				success: function(respuesta) {
+					$("#respuesta").attr("disabled", false);
+					$("#respuesta").html(respuesta);
+				}
+			})
+
+		});
+
 
 	}
 </script>
