@@ -11,7 +11,7 @@
 		<div class="row">
 			<div class="col-lg-12 col-md-6">
 
-				
+
 
 				<h3 class="font-weight-bold text-center">Nuevo Pedido</h3><br>
 
@@ -52,14 +52,23 @@
 
 					});
 				</script>
-				<form action="<?php echo SERVERURL ?>selProducto" id="formulario" method="POST" class="needs-validation" novalidate>
+				<form action="<?php echo SERVERURL ?>selProducto" id="formulario" method="POST" class="needs-validation">
 					<div class="form-row">
+						<div class="col-md-4 mb-3">
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text" id="validationTooltipUsernamePrepend">Cliente</span>
+								</div>
+								<input style="height:40px" name="cliente" id="cliente" type="text" class="form-control" id="validationTooltipUsername" placeholder="Nombres del cliente" aria-describedby="validationTooltipUsernamePrepend" required>
+
+							</div>
+						</div>
 						<div class="col-md-4 mb-3">
 							<div class="input-group">
 								<div class="input-group-prepend">
 									<span class="input-group-text" id="validationTooltipUsernamePrepend">Hombres</span>
 								</div>
-								<input style="height:40px" name="nroHombres" id="nroHombres" minlength="0" max="20" type="Number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de  hombres" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend" required>
+								<input style="height:40px" name="nroHombres" id="nroHombres" minlength="0" max="20" type="Number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de  hombres" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend" >
 
 							</div>
 						</div>
@@ -81,7 +90,7 @@
 
 							</div>
 						</div>
-						
+
 						<div class="col-md-4 mb-3">
 							<div class="input-group">
 								<div class="input-group-prepend">
@@ -95,7 +104,9 @@
 								<div class="input-group-prepend">
 									<span class="input-group-text" id="validationTooltipUsernamePrepend">Piso</span>
 								</div>
-								<input style="height:40px" value="<?php if(isset($_POST["piso"])){echo $_POST["piso"];} ?>" type="number" name="piso" id="piso-reg" readonly class="form-control" id="validationTooltipUsername" value="0" placeholder="" aria-describedby="validationTooltipUsernamePrepend" required>
+								<input style="height:40px" value="<?php if (isset($_POST["piso"])) {
+																		echo $_POST["piso"];
+																	} ?>" type="number" name="piso" id="piso-reg" readonly class="form-control" id="validationTooltipUsername" value="0" placeholder="" aria-describedby="validationTooltipUsernamePrepend" required>
 
 							</div>
 						</div>
@@ -104,7 +115,9 @@
 								<div class="input-group-prepend">
 									<span class="input-group-text" id="validationTooltipUsernamePrepend">Mesa</span>
 								</div>
-								<input style="height:40px"  value="<?php if(isset($_POST["mesa"])){echo $_POST["mesa"];} ?>" type="number" name="mesa" id="mesa-reg" readonly class="form-control" id="validationTooltipUsername" value="0" placeholder="" aria-describedby="validationTooltipUsernamePrepend" required>
+								<input style="height:40px" value="<?php if (isset($_POST["mesa"])) {
+																		echo $_POST["mesa"];
+																	} ?>" type="number" name="mesa" id="mesa-reg" readonly class="form-control" id="validationTooltipUsername" value="0" placeholder="" aria-describedby="validationTooltipUsernamePrepend" required>
 
 							</div>
 						</div>
@@ -120,22 +133,23 @@
 					<br>
 					<br>
 					<div id="alerta" style="display: none;">
-					<div class="alert alert-success" role="alert">Se seleccionó correctamente</div>
-				</div>
-				<div id="alertaPersona" style="display: none;">
-					<div class="alert alert-danger" role="alert">Debe existir minimo una persona para continuar</div>
-				</div>
+						<div class="alert alert-success" role="alert">Se seleccionó correctamente</div>
+					</div>
+					<div id="alertaPersona" style="display: none;">
+						<div class="alert alert-danger" role="alert">Debe existir minimo una persona para continuar</div>
+					</div>
 
-				<div id="alertaPiso" style="display: none;">
-					<div class="alert alert-danger" role="alert">Debe seleccionar un Piso y una Mesa</div>
-				</div>	
+					<div id="alertaPiso" style="display: none;">
+						<div class="alert alert-danger" role="alert">Debe seleccionar un Piso y una Mesa</div>
+					</div>
 
 				</form>
 			</div>
 		</div>
 	</div>
 </div>
-
+<br>
+<br>
 <!-- breadcrumb-section -->
 
 
@@ -180,6 +194,9 @@
 						<br>
 
 
+						<div id="loading" style="display: none;">
+							<img width="80" class="rounded mx-auto d-block" height="50" src="<?php echo SERVERURL ?>vistas/images/loading.gif" alt="">
+						</div>
 						<div id="listarMesa">
 
 						</div>
@@ -244,11 +261,16 @@
 				"idMesa": id,
 				"opcion": "seleccionar"
 			},
+			beforeSend: function() {
+				document.getElementById("loading").style.display = "block";
+			},
 			error: function(respuesta) {
+				document.getElementById("loading").style.display = "none";
 				$("#listarMesa").attr("disabled", false);
 				$("#listarMesa").html(respuesta);
 			},
 			success: function(respuesta) {
+				document.getElementById("loading").style.display = "none";
 				$("#listarMesa").attr("disabled", false);
 				$("#listarMesa").html(respuesta);
 			}

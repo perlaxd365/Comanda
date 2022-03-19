@@ -12,6 +12,7 @@
 			$nroHombres = $_POST["nroHombres"];
 			$nroMujeres = $_POST["nroMujeres"];
 			$nroNinios = $_POST["nroNinios"];
+			$cliente = $_POST["cliente"];
 		}
 		?>
 		<input hidden name="piso" value="<?php echo $piso ?>">
@@ -19,7 +20,9 @@
 		<input hidden name="nroHombres" value="<?php echo $nroHombres ?>">
 		<input hidden name="nroMujeres" value="<?php echo $nroMujeres ?>">
 		<input hidden name="nroNinios" value="<?php echo $nroNinios ?>">
+		<input hidden name="cliente" value="<?php echo $cliente ?>">
 		<input hidden name="comper_codigo" value="<?php echo $_SESSION["comper_codigo"] ?>">
+		<input hidden name="usua_codigo" value="<?php echo $_SESSION["usua_codigo"] ?>">
 
 		<div class="card">
 			<div class="card-header">
@@ -28,6 +31,7 @@
 			<div class="card-body">
 				<blockquote class="blockquote mb-0">
 					<p>Seleccionar pedido para la Mesa (<?php echo $mesa ?>) del Piso (<?php echo $piso ?>)</p>
+					<p>Cliente : <a href="#"><?php echo $cliente ?></a></p>
 					<!-- 
 					<footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer> -->
 				</blockquote>
@@ -183,6 +187,19 @@
 						<tbody id="nuevoform">
 						</tbody>
 					</table>
+					<table class="table total-table">
+						<tbody>
+							<tr>
+								<td><strong>TOTAL:</strong></td>
+								<td col="3">
+								S/<input type="number" id="totalPrecio" name="preciototal" readonly class="border-0" id="staticEmail2" value="0">
+								</td>
+								<td></td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+
 					<!--Código jQuery con la función borrarLibro-->
 					<script>
 						function borrar(id) {
@@ -242,6 +259,23 @@
 
 
 <script type="text/javascript">
+	function actualizarTotal(monto, operacion) {
+		let total = parseFloat(document.getElementById('totalPrecio').value)
+		let nuevoMonto = parseFloat(monto);
+		if (operacion === "+") {
+			total = total + nuevoMonto;
+		} else if (operacion === "-") {
+			total = total - nuevoMonto;
+
+		}
+
+		document.getElementById('totalPrecio').value = total.toFixed(2);
+
+		//alert(total.toFixed(2));
+	}
+
+
+
 	function mostrar(id) {
 		var x = $("#observacion" + id).val();
 
@@ -298,6 +332,7 @@
 		var id_producto = new Array();
 		var nombreDetalle = new Array();
 		var precioDetalle = new Array();
+		let total = 0;
 
 		// capturamos la fila que seleccionamos y llenamos el arreglo que creamos con push
 
@@ -310,6 +345,8 @@
 		//Contador para mostrar
 		$('#tablaDetalle tr').each(function() {
 			contador++;
+
+			total = total + parseFloat(precioDetalle[nrotabla]);
 		});
 
 		var div = document.createElement('tr');
@@ -322,9 +359,11 @@
 		//aqui armo el formulario para enviar
 		div.innerHTML += '<td><input name="cantidad[]" style="height:40px; width : 50px;" type="number" class="form-control" value="1"></td>';
 		div.innerHTML += '<input hidden name="id_producto[]" value="' + id_producto[nrotabla] + '">';
-		div.innerHTML += '<td><div class="row"><button type="button"  onclick="alertaEliminar(); eliminar(' + contador + ');" class="btn btn-outline-danger">x</button><button type="button" id="cortesia_btn' + contador + '" name="cortesia[]" class="btn btn-outline-success" onclick="cortesia(' + contador + ');">✓</button></div></td>';
+		div.innerHTML += '<td><div class="row"><button type="button"  onclick="alertaEliminar(' + precioDetalle[nrotabla] + '); eliminar(' + contador + ');" class="btn btn-outline-danger">x</button><button type="button" id="cortesia_btn' + contador + '" name="cortesia[]" class="btn btn-outline-success" onclick="cortesia(' + contador + ');">✓</button></div></td>';
 		document.getElementById('nuevoform').appendChild(div);
 		document.getElementById("alerta").style.display = "block";
+
+		actualizarTotal(precioDetalle[nrotabla], "+");
 
 		//datos : id_producto[] , cantidad[], observacion[], cortesia[]
 
@@ -378,7 +417,8 @@
 
 	}
 
-	function alertaEliminar() {
+	function alertaEliminar(monto) {
+	actualizarTotal(monto, "-") 
 		document.getElementById("hola").style.display = "block";
 		$('#hola').fadeIn();
 		setTimeout(function() {
@@ -406,7 +446,10 @@
 			var nroHombres = document.getElementsByName("nroHombres")[0].value;
 			var nroMujeres = document.getElementsByName("nroMujeres")[0].value;
 			var nroNinios = document.getElementsByName("nroNinios")[0].value;
+			var cliente = document.getElementsByName("cliente")[0].value;
 			var comper_codigo = document.getElementsByName("comper_codigo")[0].value;
+			var usua_codigo = document.getElementsByName("usua_codigo")[0].value;
+			var preciototal = document.getElementsByName("preciototal")[0].value;
 			//creamos array
 			var arrayProducto = new Array();
 			var arrayCantidad = new Array();
@@ -468,7 +511,10 @@
 					nroHombres: nroHombres,
 					nroMujeres: nroMujeres,
 					nroNinios: nroNinios,
-					comper_codigo: comper_codigo
+					cliente: cliente,
+					comper_codigo: comper_codigo,
+					usua_codigo: usua_codigo,
+					preciototal: preciototal
 				},
 				error: function() {
 					$("#respuesta").attr("disabled", false);

@@ -24,6 +24,11 @@ class comandaControlador extends comandaModelo
         $nroHombres=$_POST["nroHombres"];
         $nroMujeres=$_POST["nroMujeres"];
         $nroNinios=$_POST["nroNinios"];
+        $cliente=$_POST["cliente"];
+        $usua_codigo=$_POST["usua_codigo"];
+        $preciototal=$_POST["preciototal"];
+
+
         echo'<br><h6>datos de producto <br></h6>';
         print_r($_POST);
         echo'<br><h6>Datos de Empresa<br></h6>';
@@ -39,7 +44,14 @@ class comandaControlador extends comandaModelo
         //Consulta si existe caja aperturada # y datos
         $apertura_caja_nro=comandaModelo::get_num_caja_apertura_modelo($data_apertura);
         $apertura_caja_data=comandaModelo::get_caja_apertura_modelo($data_apertura);
+        echo'<br><h6>datos de apertura de caja <br></h6>';
+        $apertu_fecha=$apertura_caja_data["apertu_fecha"];
+        $apertu_turno=$apertura_caja_data["apertu_turno"];
+        $apertu_hora=$apertura_caja_data["apertu_hora"];
+        print_r($apertura_caja_data);
+
         if ($apertura_caja_nro == 0) {
+            echo'Caja no se encuentra aperturada';
             $alerta = [
                 "Alerta" => "simple",
                 "Titulo" => "Acceso denegado",
@@ -54,9 +66,6 @@ class comandaControlador extends comandaModelo
                 "Tipo" => "error"
             ];
         }else{
-            echo'<br><h6>datos de apertura de caja <br></h6>';
-            print_r($apertura_caja_data);
-
 
             $alerta = [
                 "Alerta" => "simple",
@@ -71,8 +80,10 @@ class comandaControlador extends comandaModelo
         $ls_numero='';
         //get año
         $fecha=comandaModelo::fecha_hora_sistema();
+        //get año
+        echo $fecha["fecha"];
         $anio = date("Y", strtotime($fecha["fecha"]));
-        //get correlativo
+        //data parámetros
         $datos=[
             "anio"=> $anio,
             "empr_codigo"=> EMPRESA,
@@ -87,13 +98,15 @@ class comandaControlador extends comandaModelo
         //crear cadena
         $ls_numero=$anio.substr(("000000".$correlativo["numeromax"]),-6);
         
-        echo'<br><h6>Correlativo de este año <br></h6>';
+        echo'<br><h6>Correlativo de este año </h6>';
         echo "Correlativo : ".$ls_numero;
 
 
         //datos de usuario
         echo'<br><h6>Datos de usuario<br></h6>';
         echo "ID : ".$_POST["comper_codigo"]."<br>";
+        echo "CODIGO : ".$_POST["usua_codigo"]."";
+        $usua_codigo=$_POST["usua_codigo"];
         
 
         //recuperar agente
@@ -104,10 +117,112 @@ class comandaControlador extends comandaModelo
             "locale_codigo"=> LOCAL
         ];
         $agente=comandaModelo::get_agente_comanda_modelo($data_agente);
-        echo "  ".$agente["comper_apenom"];
+        echo'<br><h6>Nombre Apellido<br></h6>';
+        $agente=$agente["comper_apenom"];
+        echo "  ".$agente;
+
+        //codigo de comanda
+        $codigo=comandaModelo::get_codigo_comanda_modelo();
+        echo'<br><h6>Codigo de comanda<br></h6>';
+        echo "  ".$codigo["codigo"];
+        $codigo=$codigo["codigo"];
+
+        //Get fecha y hora actual
+        echo "<br>";
+        $fecha=comandaModelo::fecha_hora_sistema();
+        $fechaactual = date("Y-m-d", strtotime($fecha["fecha"]));
+        $horaactual = date("H:i", strtotime($fecha["fecha"]));
+        echo'<br><h6>hora,fecha<br></h6>';
+        echo $fechaactual." - ".$horaactual;
+
+        
+        //SUBTOTAL , IGV Y TOTAL
+        echo'<br><h6>SUBTOTAL , IGV Y TOTAL<br></h6>';
+        $monto=$preciototal;
+        echo " <br>Monto ".$monto." <br>";
+        $igv=$monto/1.18;
+        echo "<br> igv = ".$igv."<br>";
+        $montoSinIgv=$monto-$igv;
+        echo "<br> monto sin igv = ".$montoSinIgv."<br>";
+        $total=$monto-$igv;
+        echo "<br> monto total= ".$total."<br>";
+
+        //ID DE MESA
+        $dataMesa=["mesa"=>$mesa];
+        $getid=comandaModelo::get_id_mesa_modelo($dataMesa);
+        echo'<br><h6>Nombre Apellido<br></h6>';
+        $id_mesa=$getid["commes_codigo"];
+        echo "<br> id_mesa = ".$id_mesa."<br>";
+
+        
+
+
+
+        $dataComanda=[
+            "comcom_codigo" => $codigo,
+            "empr_codigo" => EMPRESA,
+            "apertu_fecha" => $apertu_fecha,
+            "apertu_hora" => $apertu_hora,
+            "apertu_turno" => $apertu_turno,
+            "clie_codigo" => NULL,
+            "comcom_agente" => $agente,
+            "comcom_cant_femenino" => $nroMujeres,
+            "comcom_cant_masculino" => $nroHombres,
+            "comcom_cant_nino" => $nroNinios,
+            "comcom_cliente_apenom" => $cliente,
+            "comcom_estado" => '01',
+            "comcom_fact_ant" => NULL,
+            "comcom_fecha" =>$fechaactual,
+            "comcom_hora" =>$horaactual,
+            "comcom_impresion" => 0,
+            "comcom_mesas" => $mesa,
+            "comcom_montobase_dolares" => NULL,
+            "comcom_montobase_soles" => $montoSinIgv,
+            "comcom_montoigv_dolares" =>NULL,
+            "comcom_montoigv_soles" => $igv,
+            "comcom_montototal_dolares"=> null,
+            "comcom_montototal_soles" => $preciototal,
+            "comcom_numero" => $codigo,
+            "comcom_porcigv" => 18,
+            "comcom_tipocambio" => NULL,
+            "comcom_vigencia" => "SI",
+            "commes_codigo" => $id_mesa,
+            "comper_codigo" => $id_comper,
+            "empr_codigo_factura"=> NULL,
+            "fecha_creacion" => $fecha["fecha"] ,
+            "fecha_eliminacion" => NULL,
+            "fecha_modificacion" => NULL,
+            "locale_codigo" => LOCAL,
+            "usua_autoriza_eliminacion" =>NULL,
+            "usua_creacion" => $usua_codigo,
+            "usua_eliminacion" =>NULL,
+            "usua_modificacion" => NULL
+
+
+
+        ];
+
+        
+        $insertComanda=comandaModelo::agregar_comanda_modelo($dataComanda);
+        if ( $insertComanda >= 1) {
+            $alerta = [
+                "Alerta" => "recargar",
+                "Titulo" => "Completado",
+                "Texto" => "Exito al registrar comanda",
+                "Tipo" => "success"
+            ];
+        } else {
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Algo salió mal",
+                "Texto" => "No se pudo registrar comanda. ¡Ups!",
+                "Tipo" => "error"
+            ];
+        }
 
 
         
+
         return mainModel::sweet_alert($alerta);
     }
 }
