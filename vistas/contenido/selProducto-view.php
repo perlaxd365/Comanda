@@ -23,6 +23,7 @@
 		<input hidden name="cliente" value="<?php echo $cliente ?>">
 		<input hidden name="comper_codigo" value="<?php echo $_SESSION["comper_codigo"] ?>">
 		<input hidden name="usua_codigo" value="<?php echo $_SESSION["usua_codigo"] ?>">
+		<input hidden name="totalInputs" id="totalInputs">
 
 		<div class="card">
 			<div class="card-header">
@@ -359,9 +360,12 @@
 		//aqui armo el formulario para enviar
 		div.innerHTML += '<td><input name="cantidad[]" style="height:40px; width : 50px;" type="number" class="form-control" value="1"></td>';
 		div.innerHTML += '<input hidden name="id_producto[]" value="' + id_producto[nrotabla] + '">';
+		div.innerHTML += '<input hidden name="desc_pro[]" value="' + nombreDetalle[nrotabla] + '">';
+		div.innerHTML += '<input hidden name="precio_pro[]" value="' + precioDetalle[nrotabla] + '">';
 		div.innerHTML += '<td><div class="row"><button type="button"  onclick="alertaEliminar(' + precioDetalle[nrotabla] + '); eliminar(' + contador + ');" class="btn btn-outline-danger">x</button><button type="button" id="cortesia_btn' + contador + '" name="cortesia[]" class="btn btn-outline-success" onclick="cortesia(' + contador + ');">✓</button></div></td>';
 		document.getElementById('nuevoform').appendChild(div);
 		document.getElementById("alerta").style.display = "block";
+		document.getElementById('totalInputs').value = contador;
 
 		actualizarTotal(precioDetalle[nrotabla], "+");
 
@@ -436,7 +440,7 @@
 			cancelButtonText: 'No'
 		}).then(function() {
 
-
+			
 
 			//datos array : id_producto[] , cantidad[], observacion[], cortesia[] 
 			// datos : piso, mesa, nroHombres, nroMujeres, nroNinios
@@ -450,10 +454,13 @@
 			var comper_codigo = document.getElementsByName("comper_codigo")[0].value;
 			var usua_codigo = document.getElementsByName("usua_codigo")[0].value;
 			var preciototal = document.getElementsByName("preciototal")[0].value;
+			var totalInputs = document.getElementsByName("totalInputs")[0].value;
 			//creamos array
 			var arrayProducto = new Array();
 			var arrayCantidad = new Array();
 			var arrayObservacion = new Array();
+			var arrayDescPro = new Array();
+			var arrayPrecioPro = new Array();
 			var arrayCortesia = new Array();
 			//referenciamos los inputs
 			var id_producto = $("input[name='id_producto\\[\\]']").map(function() {
@@ -463,6 +470,12 @@
 				return $(this).val();
 			}).get();
 			var observacion = $("input[name='observacion\\[\\]']").map(function() {
+				return $(this).val();
+			}).get();
+			var desc_pro = $("input[name='desc_pro\\[\\]']").map(function() {
+				return $(this).val();
+			}).get();
+			var precio_pro = $("input[name='precio_pro\\[\\]']").map(function() {
 				return $(this).val();
 			}).get();
 			var cortesia = $("button[name='cortesia\\[\\]']").map(function() {
@@ -480,12 +493,20 @@
 				var itemObservacion = {};
 				itemObservacion = observacion[index];
 
+				var itemDescPro = {};
+				itemDescPro = desc_pro[index];
+
+				var itemPrecioPro = {};
+				itemPrecioPro = precio_pro[index];
+
 				var itemCortesia = {};
 				itemCortesia = cortesia[index];
 
 				arrayProducto.push(itemId_producto);
 				arrayCantidad.push(itemCantidad);
 				arrayObservacion.push(itemObservacion);
+				arrayDescPro.push(itemDescPro);
+				arrayPrecioPro.push(itemPrecioPro);
 				arrayCortesia.push(itemCortesia);
 
 			}
@@ -494,6 +515,8 @@
 			var productoJson = JSON.stringify(arrayProducto);
 			var cantidadJson = JSON.stringify(arrayCantidad);
 			var observacionJson = JSON.stringify(arrayObservacion);
+			var descproJson = JSON.stringify(arrayDescPro);
+			var precioporJson = JSON.stringify(arrayPrecioPro);
 			var cortesiaJson = JSON.stringify(arrayCortesia);
 
 
@@ -505,6 +528,8 @@
 					producto: productoJson,
 					cantidad: cantidadJson,
 					observacion: observacionJson,
+					descpro: descproJson,
+					preciopro: precioporJson,
 					cortesia: cortesiaJson,
 					piso: piso,
 					mesa: mesa,
@@ -514,7 +539,8 @@
 					cliente: cliente,
 					comper_codigo: comper_codigo,
 					usua_codigo: usua_codigo,
-					preciototal: preciototal
+					preciototal: preciototal,
+					totalInputs: totalInputs
 				},
 				error: function() {
 					$("#respuesta").attr("disabled", false);

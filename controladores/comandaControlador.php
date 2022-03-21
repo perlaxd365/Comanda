@@ -16,9 +16,12 @@ class comandaControlador extends comandaModelo
         $id_producto=$_POST["producto"];
         $cantidad=$_POST["cantidad"];
         $observacion=$_POST["observacion"];
+        $descpro=$_POST["descpro"];
+        $preciopro=$_POST["preciopro"];
         $cortesia=$_POST["cortesia"];
 
         //piso,mesa y personas
+        $totalInputs=$_POST["totalInputs"];
         $piso=$_POST["piso"];
         $mesa=$_POST["mesa"];
         $nroHombres=$_POST["nroHombres"];
@@ -124,21 +127,21 @@ class comandaControlador extends comandaModelo
         //codigo de comanda
         $codigo=comandaModelo::get_codigo_comanda_modelo();
         echo'<br><h6>Codigo de comanda<br></h6>';
-        echo "  ".$codigo["codigo"];
         $codigo=$codigo["codigo"];
+        echo "  ".$codigo;
 
         //Get fecha y hora actual
         echo "<br>";
         $fecha=comandaModelo::fecha_hora_sistema();
         $fechaactual = date("Y-m-d", strtotime($fecha["fecha"]));
         $horaactual = date("H:i", strtotime($fecha["fecha"]));
-        echo'<br><h6>hora,fecha<br></h6>';
+        echo'<br><h6>Fecha y Hora<br></h6>';
         echo $fechaactual." - ".$horaactual;
 
         
         //SUBTOTAL , IGV Y TOTAL
         echo'<br><h6>SUBTOTAL , IGV Y TOTAL<br></h6>';
-        $monto=$preciototal;
+        $monto= $preciototal;
         echo " <br>Monto ".$monto." <br>";
         $igv=$monto/1.18;
         echo "<br> igv = ".$igv."<br>";
@@ -150,7 +153,7 @@ class comandaControlador extends comandaModelo
         //ID DE MESA
         $dataMesa=["mesa"=>$mesa];
         $getid=comandaModelo::get_id_mesa_modelo($dataMesa);
-        echo'<br><h6>Nombre Apellido<br></h6>';
+        echo'<br><h6>ID Mesa<br></h6>';
         $id_mesa=$getid["commes_codigo"];
         echo "<br> id_mesa = ".$id_mesa."<br>";
 
@@ -162,49 +165,57 @@ class comandaControlador extends comandaModelo
             "comcom_codigo" => $codigo,
             "empr_codigo" => EMPRESA,
             "apertu_fecha" => $apertu_fecha,
-            "apertu_hora" => $apertu_hora,
             "apertu_turno" => $apertu_turno,
-            "clie_codigo" => NULL,
-            "comcom_agente" => $agente,
-            "comcom_cant_femenino" => $nroMujeres,
-            "comcom_cant_masculino" => $nroHombres,
-            "comcom_cant_nino" => $nroNinios,
-            "comcom_cliente_apenom" => $cliente,
-            "comcom_estado" => '01',
-            "comcom_fact_ant" => NULL,
-            "comcom_fecha" =>$fechaactual,
-            "comcom_hora" =>$horaactual,
-            "comcom_impresion" => 0,
-            "comcom_mesas" => $mesa,
-            "comcom_montobase_dolares" => NULL,
-            "comcom_montobase_soles" => $montoSinIgv,
-            "comcom_montoigv_dolares" =>NULL,
-            "comcom_montoigv_soles" => $igv,
-            "comcom_montototal_dolares"=> null,
-            "comcom_montototal_soles" => $preciototal,
-            "comcom_numero" => $codigo,
-            "comcom_porcigv" => 18,
-            "comcom_tipocambio" => NULL,
-            "comcom_vigencia" => "SI",
+            "apertu_hora" => $apertu_hora,
             "commes_codigo" => $id_mesa,
             "comper_codigo" => $id_comper,
-            "empr_codigo_factura"=> NULL,
-            "fecha_creacion" => $fecha["fecha"] ,
-            "fecha_eliminacion" => NULL,
-            "fecha_modificacion" => NULL,
+            "clie_codigo" => NULL,
             "locale_codigo" => LOCAL,
-            "usua_autoriza_eliminacion" =>NULL,
-            "usua_creacion" => $usua_codigo,
+            "comcom_cliente_apenom" => $cliente,
+            "comcom_numero" => $ls_numero,
+            "comcom_fecha" =>$fechaactual,
+            "comcom_hora" =>$horaactual,
+            "comcom_estado" => '01',
+            "comcom_montobase_soles" => mainModel::moneyFormat($montoSinIgv,"USD"),
+            "comcom_montobase_dolares" => NULL,
+            "comcom_montoigv_soles" =>mainModel::moneyFormat($igv,"USD"),
+            "comcom_montoigv_dolares" =>NULL,
+            "comcom_montototal_soles" => mainModel::moneyFormat($preciototal,"USD"),
+            "comcom_montototal_dolares"=> null,
+            "comcom_tipocambio" => NULL,
+            "comcom_porcigv" => 18,
+            "comcom_mesas" => $mesa,
+            "comcom_vigencia" => "SI",
+            "comcom_cant_masculino" => $nroHombres,
+            "comcom_cant_femenino" => $nroMujeres,
+            "comcom_cant_nino" => $nroNinios,
+            "comcom_impresion" => 0,
+            "comcom_fact_ant" => NULL,
+            "empr_codigo_factura"=> EMPRESA,
+            "comcom_agente" => $agente,
             "usua_eliminacion" =>NULL,
-            "usua_modificacion" => NULL
-
-
+            "fecha_eliminacion" => NULL,
+            "usua_creacion" => $usua_codigo,
+            "fecha_creacion" => $fecha["fecha"],
+            "usua_modificacion" => NULL,
+            "fecha_modificacion" => NULL,
+            "usua_autoriza_eliminacion" =>NULL
 
         ];
 
         
         $insertComanda=comandaModelo::agregar_comanda_modelo($dataComanda);
         if ( $insertComanda >= 1) {
+
+            for ($i=0; $i < $totalInputs; $i++) { 
+               
+                echo $descpro[$i];
+            }
+
+
+
+
+
             $alerta = [
                 "Alerta" => "recargar",
                 "Titulo" => "Completado",
@@ -220,8 +231,6 @@ class comandaControlador extends comandaModelo
             ];
         }
 
-
-        
 
         return mainModel::sweet_alert($alerta);
     }

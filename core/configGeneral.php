@@ -1,6 +1,6 @@
 <?php 
 
-const SERVERURL="http://192.168.1.9/comanda/";
+const SERVERURL="http://localhost/comanda/";
 const EMPRESA = '01';
 const LOCAL = '01';
 const COMPANYNAME="CORSCH";

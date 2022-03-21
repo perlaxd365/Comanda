@@ -1,121 +1,182 @@
-<?php 
+<?php
 if ($peticionAjax) {
 	require_once '../core/mainModel.php';
-}else{
+} else {
 	require_once './core/mainModel.php';
 }
 
 class comandaModelo extends mainModel
 {
-	
-	protected function agregar_comanda_modelo($datos){
-        
-		$consulta=odbc_prepare(mainModel::conectar(),"INSERT INTO comand_comanda 
+
+	protected function agregar_comanda_modelo($datos)
+	{
+
+		$consulta = odbc_prepare(mainModel::conectar(), "INSERT INTO comand_comanda 
 		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-        $sql = odbc_execute($consulta, 
-		array($datos["comcom_codigo"]),
-		array($datos["empr_codigo"]),
-		array($datos["apertu_fecha"]),
-		array($datos["apertu_hora"]),
-		array($datos["apertu_turno"]),
-		array($datos["clie_codigo"]),
-		array($datos["comcom_agente"]),
-		array($datos["comcom_cant_femenino"]),
-		array($datos["comcom_cant_masculino"]),
-		array($datos["comcom_cant_nino"]),
-		array($datos["comcom_cliente_apenom"]),
-		array($datos["comcom_estado"]),
-		array($datos["comcom_fact_ant"]),
-		array($datos["comcom_fecha"]),
-		array($datos["comcom_hora"]),
-		array($datos["comcom_impresion"]),
-		array($datos["comcom_mesas"]),
-		array($datos["comcom_montobase_dolares"]),
-		array($datos["comcom_montobase_soles"]),
-		array($datos["comcom_montoigv_dolares"]),
-		array($datos["comcom_montoigv_soles"]),
-		array($datos["comcom_montototal_dolares"]),
-		array($datos["comcom_montototal_soles"]),
-		array($datos["comcom_numero"]),
-		array($datos["comcom_porcigv"]),
-		array($datos["comcom_tipocambio"]),
-		array($datos["comcom_vigencia"]),
-		array($datos["commes_codigo"]),
-		array($datos["comper_codigo"]),
-		array($datos["empr_codigo_factura"]),
-		array($datos["fecha_creacion"]),
-		array($datos["fecha_eliminacion"]),
-		array($datos["fecha_modificacion"]),
-		array($datos["locale_codigo"]),
-		array($datos["usua_autoriza_eliminacion"]),
-		array($datos["usua_creacion"]),
-		array($datos["usua_eliminacion"]),
-		array($datos["usua_modificacion"])
+		$sql = odbc_execute(
+			$consulta,
+			array(
+				$datos["comcom_codigo"], 
+				$datos["empr_codigo"],
+				$datos["apertu_fecha"],
+				$datos["apertu_turno"],
+				$datos["apertu_hora"],
+				$datos["commes_codigo"],
+				$datos["comper_codigo"],
+				$datos["clie_codigo"],
+				$datos["locale_codigo"],
+				$datos["comcom_cliente_apenom"],
+				$datos["comcom_numero"],
+				$datos["comcom_fecha"],
+				$datos["comcom_hora"],
+				$datos["comcom_estado"],
+				$datos["comcom_montobase_soles"],
+				$datos["comcom_montobase_dolares"],
+				$datos["comcom_montoigv_soles"],
+				$datos["comcom_montoigv_dolares"],
+				$datos["comcom_montototal_soles"],
+				$datos["comcom_montototal_dolares"],
+				$datos["comcom_tipocambio"],
+				$datos["comcom_porcigv"],
+				$datos["comcom_mesas"],
+				$datos["comcom_vigencia"],
+				$datos["comcom_cant_masculino"],
+				$datos["comcom_cant_femenino"],
+				$datos["comcom_cant_nino"],
+				$datos["comcom_impresion"],
+				$datos["comcom_fact_ant"],
+				$datos["empr_codigo_factura"],
+				$datos["comcom_agente"],
+				$datos["usua_eliminacion"],
+				$datos["fecha_eliminacion"],
+				$datos["usua_creacion"],
+				$datos["fecha_creacion"],
+				$datos["usua_modificacion"],
+				$datos["fecha_modificacion"],
+				$datos["usua_autoriza_eliminacion"]
+			)
 		);
 		$sql = odbc_num_rows($consulta);
 		return $sql;
 	}
-	protected function fecha_hora_sistema(){
-		$consulta=odbc_prepare(mainModel::conectar(),"SELECT MAX(getdate()) AS fecha from come_moneda;");
-        $sql = odbc_execute($consulta);
-		$respuesta=odbc_fetch_array($consulta);
+	protected function agregar_comanda_detalle_modelo($datos)
+	{
+
+		$consulta = odbc_prepare(mainModel::conectar(), "INSERT INTO comand_comandadetalle 
+		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+		$sql = odbc_execute(
+			$consulta,
+			array(
+				$datos["comcom_codigo"], 
+				$datos["empr_codigo"],
+				$datos["cocode_item"],
+				$datos["alma_codigo"],
+				$datos["prod_codigo"],
+				$datos["comoca_codigo"],
+				$datos["comoca_abreviatura"],
+				$datos["cocode_producto"],
+				$datos["cocode_precio_soles"],
+				$datos["cocode_precio_dolares"],
+				$datos["cocode_cantidad"],
+				$datos["cocode_subtotal_soles"],
+				$datos["cocode_subtotal_dolares"],
+				$datos["cocode_cortesia"],
+				$datos["cocode_cancelado"],
+				$datos["cocode_enviado"],
+				$datos["cocode_conpropiedades"],
+				$datos["cocode_conobservaciones"],
+				$datos["cocode_observaciones"],
+				$datos["cocode_orden"],
+				$datos["cocode_grupo"],
+				$datos["prpr_codigo"],
+				$datos["prpr_descripcion"],
+				$datos["cocode_fact_atend"],
+				$datos["cocode_fact_saldo"],
+				$datos["cocode_producto_codint"],
+				$datos["usua_creacion"],
+				$datos["fecha_creacion"],
+				$datos["usua_modificacion"],
+				$datos["fecha_modificacion"],
+				$datos["usua_cancelado"],
+				$datos["fecha_cancelado"],
+				$datos["cocode_costo_producto"],
+				$datos["cocode_atendido"],
+				$datos["cocode_atendido_fechahora"],
+				$datos["usua_autoriza_cancelado"],
+				$datos["cocode_pedido_hora"]
+			)
+		);
+		$sql = odbc_num_rows($consulta);
+		return $sql;
+	}
+	protected function fecha_hora_sistema()
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT MAX(getdate()) AS fecha from come_moneda;");
+		$sql = odbc_execute($consulta);
+		$respuesta = odbc_fetch_array($consulta);
 		return $respuesta;
-    }
-	protected function get_correlativo_modelo($datos){
-		$consulta=odbc_prepare(mainModel::conectar(),"SELECT MAX(CAST(RIGHT(comcom_numero,6) as decimal)) as numeromax from comand_comanda
+	}
+	protected function get_correlativo_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT MAX(CAST(RIGHT(comcom_numero,6) as decimal)) as numeromax from comand_comanda
 		where year(comcom_fecha)=? and empr_codigo=? and locale_codigo = ?");
-        $sql = odbc_execute($consulta, array($datos["anio"], $datos["empr_codigo"], $datos["locale_codigo"]));
-		$sql=odbc_fetch_array($consulta);
+		$sql = odbc_execute($consulta, array($datos["anio"], $datos["empr_codigo"], $datos["locale_codigo"]));
+		$sql = odbc_fetch_array($consulta);
 		return $sql;
-    }
-	protected function get_caja_apertura_modelo($datos){
-		$consulta=odbc_prepare(mainModel::conectar(),"SELECT apertu_fecha,apertu_turno,apertu_hora
+	}
+	protected function get_caja_apertura_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT apertu_fecha,apertu_turno,apertu_hora
 		FROM comand_caja c 
 		JOIN comand_apertura a 
 		ON a.caja_codigo = c.caja_codigo and c.empr_codigo = a.empr_codigo
 		where c.empr_codigo = ? and c.locale_codigo = ? 
 		and c.caja_vigencia = 'SI' and a.apertu_vigencia = 'Si' and a.apertu_estado = 'A' ;
 		");
-        $sql = odbc_execute($consulta, array($datos["empr_codigo"], $datos["locale_codigo"]));
-		$sql=odbc_fetch_array($consulta);
+		$sql = odbc_execute($consulta, array($datos["empr_codigo"], $datos["locale_codigo"]));
+		$sql = odbc_fetch_array($consulta);
 		return $sql;
-    }
-	protected function get_num_caja_apertura_modelo($datos){
-		$consulta=odbc_prepare(mainModel::conectar(),"SELECT apertu_fecha,apertu_turno,apertu_hora
+	}
+	protected function get_num_caja_apertura_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT apertu_fecha,apertu_turno,apertu_hora
 		FROM comand_caja c 
 		JOIN comand_apertura a 
 		ON a.caja_codigo = c.caja_codigo and c.empr_codigo = a.empr_codigo
 		where c.empr_codigo = ? and c.locale_codigo = ? 
 		and c.caja_vigencia = 'SI' and a.apertu_vigencia = 'Si' and a.apertu_estado = 'A' ;
 		");
-        $sql = odbc_execute($consulta, array($datos["empr_codigo"], $datos["locale_codigo"]));
+		$sql = odbc_execute($consulta, array($datos["empr_codigo"], $datos["locale_codigo"]));
 		$sql = odbc_num_rows($consulta);
 		return $sql;
 	}
 
-	protected function get_agente_comanda_modelo($datos){
-		$consulta=odbc_prepare(mainModel::conectar(),"SELECT comper_apenom FROM comand_personal
+	protected function get_agente_comanda_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT comper_apenom FROM comand_personal
 		WHERE comper_vigencia = 'SI'
 		AND comper_codigo = ?
 		AND empr_codigo = ?
 		AND locale_codigo = ?
 		");
-        $sql = odbc_execute($consulta, array($datos["comper_codigo"],$datos["empr_codigo"], $datos["locale_codigo"]));
+		$sql = odbc_execute($consulta, array($datos["comper_codigo"], $datos["empr_codigo"], $datos["locale_codigo"]));
 		$sql = odbc_fetch_array($consulta);
 		return $sql;
-    }
-	protected function get_codigo_comanda_modelo(){
-		$consulta=odbc_prepare(mainModel::conectar(),"SELECT MAX(comcom_codigo)+1 AS codigo from comand_comanda;");
-        $sql = odbc_execute($consulta);
-		$respuesta=odbc_fetch_array($consulta);
+	}
+	protected function get_codigo_comanda_modelo()
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT MAX(comcom_codigo)+1 AS codigo from comand_comanda;");
+		$sql = odbc_execute($consulta);
+		$respuesta = odbc_fetch_array($consulta);
 		return $respuesta;
-    }
+	}
 
-	protected function get_id_mesa_modelo($datos){
-		$consulta=odbc_prepare(mainModel::conectar(),"SELECT commes_codigo FROM comand_mesas
+	protected function get_id_mesa_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT commes_codigo FROM comand_mesas
 		WHERE commes_nromesa = ? ;");
-        $sql = odbc_execute($consulta, array($datos["mesa"]));
+		$sql = odbc_execute($consulta, array($datos["mesa"]));
 		$sql = odbc_fetch_array($consulta);
 		return $sql;
-    }
+	}
 }
