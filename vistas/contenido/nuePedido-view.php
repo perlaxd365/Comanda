@@ -174,7 +174,8 @@
 				<div class="col-md-12 mb-3">
 					<div class="input-group">
 						<div class="input-group-prepend">
-						</div><select onchange="listarMesas(this)" class="custom-select">
+						</div>
+						<select onchange="listarMesas(this)" class="custom-select">
 							<option selected>Abrir para seleccionar Piso</option>
 
 							<?php

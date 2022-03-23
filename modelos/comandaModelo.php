@@ -179,4 +179,31 @@ class comandaModelo extends mainModel
 		$sql = odbc_fetch_array($consulta);
 		return $sql;
 	}
+	protected function get_cod_interno_producto_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT prod_codigo_interno FROM alma_producto
+		WHERE prod_codigo = ? ;");
+		$sql = odbc_execute($consulta, array($datos["prod_codigo"]));
+		$sql = odbc_fetch_array($consulta);
+		return $sql;
+	}
+
+	protected function data_comanda_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT * FROM  comand_comandadetalle de INNER JOIN comand_comanda co ON  de.comcom_codigo =co.comcom_codigo
+		WHERE de.comcom_codigo = ? ;");
+		$sql = odbc_execute($consulta, array($datos["comcom_codigo"]));
+		return $consulta;
+	}
+    
+    protected function get_piso_mesa_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT ambien_piso FROM comand_ambiente am INNER JOIN comand_mesas me ON am.ambien_codigo=me.ambien_codigo
+        WHERE commes_codigo=?;");
+        $sql = odbc_execute($consulta, array($datos["commes_codigo"]));
+		$sql = odbc_fetch_array($consulta);
+        
+        return $sql;
+    }
 }

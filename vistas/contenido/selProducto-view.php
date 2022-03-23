@@ -13,6 +13,25 @@
 			$nroMujeres = $_POST["nroMujeres"];
 			$nroNinios = $_POST["nroNinios"];
 			$cliente = $_POST["cliente"];
+		} elseif (isset($_POST["comcom_codigo"])) {
+
+
+			require_once "./controladores/comandaControlador.php";
+			$claseComanda = new comandaControlador();
+			$est = $claseComanda->data_comanda_controlador($_POST["comcom_codigo"]);
+
+			while ($estatico = odbc_fetch_array($est)) {
+				$mesa = $estatico["comcom_mesas"];
+				$nroHombres = $estatico["comcom_cant_masculino"];
+				$nroMujeres = $estatico["comcom_cant_femenino"];
+				$nroNinios = $estatico["comcom_cant_nino"];
+				$cliente = $estatico["comcom_cliente_apenom"];
+
+
+				$commes_codigo = $estatico["commes_codigo"];
+			}
+			$comanda_mesa = $claseComanda->get_piso_mesa_controlador($commes_codigo);
+			$piso=$comanda_mesa["ambien_piso"];
 		}
 		?>
 		<input hidden name="piso" value="<?php echo $piso ?>">
@@ -193,7 +212,7 @@
 							<tr>
 								<td><strong>TOTAL:</strong></td>
 								<td col="3">
-								S/<input type="number" id="totalPrecio" name="preciototal" readonly class="border-0" id="staticEmail2" value="0">
+									S/<input type="number" id="totalPrecio" name="preciototal" readonly class="border-0" id="staticEmail2" value="0">
 								</td>
 								<td></td>
 								<td></td>
@@ -210,7 +229,7 @@
 					</script>
 					<br>
 					<div class="">
-						<a href="javascript:history.back()" class="boxed-btn black">Cancelar</a>
+						<a href="javascript:calcularTotal();" class="boxed-btn black">Cancelar</a>
 						<a href="<?php echo SERVERURL ?>verPedido" class="boxed-btn black">Ver Pedido</a>
 						<a onclick="enviarDatos();" class="boxed-btn">Enviar</a>
 						<div id="respuesta"></div>
@@ -260,20 +279,27 @@
 
 
 <script type="text/javascript">
-	function actualizarTotal(monto, operacion) {
-		let total = parseFloat(document.getElementById('totalPrecio').value)
-		let nuevoMonto = parseFloat(monto);
-		if (operacion === "+") {
-			total = total + nuevoMonto;
-		} else if (operacion === "-") {
-			total = total - nuevoMonto;
+	function calcularTotal() {
 
+		var precio_pro = $("input[name='precio_pro\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
+
+		var cantidad = $("input[name='cantidad\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
+
+		var total = 0
+
+		for (let index = 0; index < precio_pro.length; index++) {
+
+			total = total + precio_pro[index] * cantidad[index];
 		}
-
 		document.getElementById('totalPrecio').value = total.toFixed(2);
-
-		//alert(total.toFixed(2));
 	}
+
+
+
 
 
 
@@ -358,16 +384,16 @@
 		div.innerHTML += '<td><strong>' + nombreDetalle[nrotabla] + ' <br> (S/ ' + precioDetalle[nrotabla] + ')</td>';
 		div.innerHTML += '<td><button type="button" onclick="mostrar(' + contador + ')" class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></strong> <input type="text" hidden value="" name="observacion[]"  id="observacion' + contador + '"></td>';
 		//aqui armo el formulario para enviar
-		div.innerHTML += '<td><input name="cantidad[]" style="height:40px; width : 50px;" type="number" class="form-control" value="1"></td>';
+		div.innerHTML += '<td><input id="cantidad" name="cantidad[]" style="height:40px; width : 50px;" type="number" min="1" required onchange="calcularTotal();" onkeydown="calcularTotal();" onkeypress="calcularTotal();" onkeyup="calcularTotal();"  class="form-control" value="1"></td>';
 		div.innerHTML += '<input hidden name="id_producto[]" value="' + id_producto[nrotabla] + '">';
 		div.innerHTML += '<input hidden name="desc_pro[]" value="' + nombreDetalle[nrotabla] + '">';
 		div.innerHTML += '<input hidden name="precio_pro[]" value="' + precioDetalle[nrotabla] + '">';
-		div.innerHTML += '<td><div class="row"><button type="button"  onclick="alertaEliminar(' + precioDetalle[nrotabla] + '); eliminar(' + contador + ');" class="btn btn-outline-danger">x</button><button type="button" id="cortesia_btn' + contador + '" name="cortesia[]" class="btn btn-outline-success" onclick="cortesia(' + contador + ');">✓</button></div></td>';
+		div.innerHTML += '<td><div class="row"><button type="button"  onclick=" eliminar(' + contador + ');calcularTotal();	" class="btn btn-outline-danger">x</button><button type="button" id="cortesia_btn' + contador + '" name="cortesia[]" class="btn btn-outline-success" onclick="cortesia(' + contador + ');">✓</button></div></td>';
 		document.getElementById('nuevoform').appendChild(div);
 		document.getElementById("alerta").style.display = "block";
 		document.getElementById('totalInputs').value = contador;
 
-		actualizarTotal(precioDetalle[nrotabla], "+");
+		calcularTotal();
 
 		//datos : id_producto[] , cantidad[], observacion[], cortesia[]
 
@@ -381,6 +407,7 @@
 
 	function eliminar(n) {
 		jQuery("tr").remove(`#${n}`);
+		calcularTotal();
 		contador = contador - 1;
 		if (contador <= 0) {
 			contador = 0;
@@ -399,7 +426,7 @@
 		if (valor === "1") {
 
 			document.getElementById("cortesia_btn" + contador).style.backgroundColor = "white";
-			$("#cortesia_btn" + contador).val(0);
+			$("#cortesia_btn" + contador).val("");
 			//aleerta
 			document.getElementById("quitarcortesiaAlerta").style.display = "block";
 			$('#quitarcortesiaAlerta').fadeIn();
@@ -422,7 +449,7 @@
 	}
 
 	function alertaEliminar(monto) {
-	actualizarTotal(monto, "-") 
+		calcularTotal();
 		document.getElementById("hola").style.display = "block";
 		$('#hola').fadeIn();
 		setTimeout(function() {
@@ -431,128 +458,160 @@
 	}
 
 	function enviarDatos() {
-		swal({
-			title: 'Confirmación',
-			text: '¿Estás seguro que quieres enviar el pedido?',
-			type: 'question',
-			showCancelButton: true,
-			confirmButtonText: 'Si',
-			cancelButtonText: 'No'
-		}).then(function() {
 
-			
 
-			//datos array : id_producto[] , cantidad[], observacion[], cortesia[] 
-			// datos : piso, mesa, nroHombres, nroMujeres, nroNinios
+		var precio_pro = $("input[name='precio_pro\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
+		var cantidad = $("input[name='cantidad\\[\\]']").map(function() {
+			return $(this).val();
+		}).get();
 
-			var piso = document.getElementsByName("piso")[0].value;
-			var mesa = document.getElementsByName("mesa")[0].value;
-			var nroHombres = document.getElementsByName("nroHombres")[0].value;
-			var nroMujeres = document.getElementsByName("nroMujeres")[0].value;
-			var nroNinios = document.getElementsByName("nroNinios")[0].value;
-			var cliente = document.getElementsByName("cliente")[0].value;
-			var comper_codigo = document.getElementsByName("comper_codigo")[0].value;
-			var usua_codigo = document.getElementsByName("usua_codigo")[0].value;
-			var preciototal = document.getElementsByName("preciototal")[0].value;
-			var totalInputs = document.getElementsByName("totalInputs")[0].value;
-			//creamos array
-			var arrayProducto = new Array();
-			var arrayCantidad = new Array();
-			var arrayObservacion = new Array();
-			var arrayDescPro = new Array();
-			var arrayPrecioPro = new Array();
-			var arrayCortesia = new Array();
-			//referenciamos los inputs
-			var id_producto = $("input[name='id_producto\\[\\]']").map(function() {
-				return $(this).val();
-			}).get();
-			var cantidad = $("input[name='cantidad\\[\\]']").map(function() {
-				return $(this).val();
-			}).get();
-			var observacion = $("input[name='observacion\\[\\]']").map(function() {
-				return $(this).val();
-			}).get();
-			var desc_pro = $("input[name='desc_pro\\[\\]']").map(function() {
-				return $(this).val();
-			}).get();
-			var precio_pro = $("input[name='precio_pro\\[\\]']").map(function() {
-				return $(this).val();
-			}).get();
-			var cortesia = $("button[name='cortesia\\[\\]']").map(function() {
-				return $(this).val();
-			}).get();
+		var error = false;
+		var cont = 0;
+		for (let index = 0; index < precio_pro.length; index++) {
+			cont++;
+			if (cantidad[index] == 0 || cantidad[index] == "") {
 
-			for (let index = 0; index < id_producto.length; index++) {
-
-				var itemId_producto = {};
-				itemId_producto = id_producto[index];
-
-				var itemCantidad = {};
-				itemCantidad = cantidad[index];
-
-				var itemObservacion = {};
-				itemObservacion = observacion[index];
-
-				var itemDescPro = {};
-				itemDescPro = desc_pro[index];
-
-				var itemPrecioPro = {};
-				itemPrecioPro = precio_pro[index];
-
-				var itemCortesia = {};
-				itemCortesia = cortesia[index];
-
-				arrayProducto.push(itemId_producto);
-				arrayCantidad.push(itemCantidad);
-				arrayObservacion.push(itemObservacion);
-				arrayDescPro.push(itemDescPro);
-				arrayPrecioPro.push(itemPrecioPro);
-				arrayCortesia.push(itemCortesia);
-
+				error = true;
 			}
-
-			var url = "ajax/comandaAjax.php";
-			var productoJson = JSON.stringify(arrayProducto);
-			var cantidadJson = JSON.stringify(arrayCantidad);
-			var observacionJson = JSON.stringify(arrayObservacion);
-			var descproJson = JSON.stringify(arrayDescPro);
-			var precioporJson = JSON.stringify(arrayPrecioPro);
-			var cortesiaJson = JSON.stringify(arrayCortesia);
-
-
-
-			$.ajax({
-				type: 'POST',
-				url: url,
-				data: {
-					producto: productoJson,
-					cantidad: cantidadJson,
-					observacion: observacionJson,
-					descpro: descproJson,
-					preciopro: precioporJson,
-					cortesia: cortesiaJson,
-					piso: piso,
-					mesa: mesa,
-					nroHombres: nroHombres,
-					nroMujeres: nroMujeres,
-					nroNinios: nroNinios,
-					cliente: cliente,
-					comper_codigo: comper_codigo,
-					usua_codigo: usua_codigo,
-					preciototal: preciototal,
-					totalInputs: totalInputs
-				},
-				error: function() {
-					$("#respuesta").attr("disabled", false);
-					$("#respuesta").html(respuesta);
-				},
-				success: function(respuesta) {
-					$("#respuesta").attr("disabled", false);
-					$("#respuesta").html(respuesta);
-				}
+		}
+		if (cont == 0) {
+			error = true;
+		}
+		if (error) {
+			swal({
+				title: 'Error',
+				text: 'Debes llenar los campos correctamemte, gracias. ',
+				type: 'error',
+				confirmButtonText: 'Aceptar',
 			})
+		} else {
+			swal({
+				title: 'Confirmación',
+				text: '¿Estás seguro que quieres enviar el pedido?',
+				type: 'question',
+				showCancelButton: true,
+				confirmButtonText: 'Si',
+				cancelButtonText: 'No'
+			}).then(function() {
 
-		});
+
+
+				//datos array : id_producto[] , cantidad[], observacion[], cortesia[] 
+				// datos : piso, mesa, nroHombres, nroMujeres, nroNinios
+
+				var piso = document.getElementsByName("piso")[0].value;
+				var mesa = document.getElementsByName("mesa")[0].value;
+				var nroHombres = document.getElementsByName("nroHombres")[0].value;
+				var nroMujeres = document.getElementsByName("nroMujeres")[0].value;
+				var nroNinios = document.getElementsByName("nroNinios")[0].value;
+				var cliente = document.getElementsByName("cliente")[0].value;
+				var comper_codigo = document.getElementsByName("comper_codigo")[0].value;
+				var usua_codigo = document.getElementsByName("usua_codigo")[0].value;
+				var preciototal = document.getElementsByName("preciototal")[0].value;
+				var totalInputs = document.getElementsByName("totalInputs")[0].value;
+				//creamos array
+				var arrayProducto = new Array();
+				var arrayCantidad = new Array();
+				var arrayObservacion = new Array();
+				var arrayDescPro = new Array();
+				var arrayPrecioPro = new Array();
+				var arrayCortesia = new Array();
+				//referenciamos los inputs
+				var id_producto = $("input[name='id_producto\\[\\]']").map(function() {
+					return $(this).val();
+				}).get();
+				var cantidad = $("input[name='cantidad\\[\\]']").map(function() {
+					return $(this).val();
+				}).get();
+				var observacion = $("input[name='observacion\\[\\]']").map(function() {
+					return $(this).val();
+				}).get();
+				var desc_pro = $("input[name='desc_pro\\[\\]']").map(function() {
+					return $(this).val();
+				}).get();
+				var precio_pro = $("input[name='precio_pro\\[\\]']").map(function() {
+					return $(this).val();
+				}).get();
+				var cortesia = $("button[name='cortesia\\[\\]']").map(function() {
+					return $(this).val();
+				}).get();
+
+				for (let index = 0; index < id_producto.length; index++) {
+
+					var itemId_producto = {};
+					itemId_producto = id_producto[index];
+
+					var itemCantidad = {};
+					itemCantidad = cantidad[index];
+
+					var itemObservacion = {};
+					itemObservacion = observacion[index];
+
+					var itemDescPro = {};
+					itemDescPro = desc_pro[index];
+
+					var itemPrecioPro = {};
+					itemPrecioPro = precio_pro[index];
+
+					var itemCortesia = {};
+					itemCortesia = cortesia[index];
+
+					arrayProducto.push(itemId_producto);
+					arrayCantidad.push(itemCantidad);
+					arrayObservacion.push(itemObservacion);
+					arrayDescPro.push(itemDescPro);
+					arrayPrecioPro.push(itemPrecioPro);
+					arrayCortesia.push(itemCortesia);
+
+				}
+
+				var url = "ajax/comandaAjax.php";
+				var productoJson = JSON.stringify(arrayProducto);
+				var cantidadJson = JSON.stringify(arrayCantidad);
+				var observacionJson = JSON.stringify(arrayObservacion);
+				var descproJson = JSON.stringify(arrayDescPro);
+				var precioporJson = JSON.stringify(arrayPrecioPro);
+				var cortesiaJson = JSON.stringify(arrayCortesia);
+
+
+
+				$.ajax({
+					type: 'POST',
+					url: url,
+					data: {
+						producto: productoJson,
+						cantidad: cantidadJson,
+						observacion: observacionJson,
+						descpro: descproJson,
+						preciopro: precioporJson,
+						cortesia: cortesiaJson,
+						piso: piso,
+						mesa: mesa,
+						nroHombres: nroHombres,
+						nroMujeres: nroMujeres,
+						nroNinios: nroNinios,
+						cliente: cliente,
+						comper_codigo: comper_codigo,
+						usua_codigo: usua_codigo,
+						preciototal: preciototal,
+						totalInputs: totalInputs
+					},
+					error: function() {
+						$("#respuesta").attr("disabled", false);
+						$("#respuesta").html(respuesta);
+					},
+					success: function(respuesta) {
+						$("#respuesta").attr("disabled", false);
+						$("#respuesta").html(respuesta);
+					}
+				})
+
+			});
+		}
+
+
 
 
 	}

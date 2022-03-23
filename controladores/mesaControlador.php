@@ -1,11 +1,11 @@
 <?php
 if ($peticionAjax) {
-    require_once "../core/mainModel.php";
+    require_once "../modelos/mesaModelo.php";
 } else {
-    require_once "./core/mainModel.php";
+    require_once "./modelos/mesaModelo.php";
 }
 
-class mesaControlador extends mainModel
+class mesaControlador extends mesaModelo
 {
 
     public static function listar_mesa_controlador($id, $opcion)
@@ -81,6 +81,58 @@ class mesaControlador extends mainModel
                ';
         }
         $tabla .= '</tbody>
+        </table>
+        </div>';
+
+
+        return $tabla;
+    }
+
+    public static function pedidos_activos_controlador()
+    {   
+        $comper_codigo=$_POST['comper_codigo'];
+        $ambien_piso=$_POST['ambien_piso'];
+        $dataPedidoActivo=[
+
+            "comper_codigo" => $comper_codigo,
+            "ambien_piso" => $ambien_piso,
+            "empr_codigo" => EMPRESA,
+            "locale_codigo" => LOCAL
+
+        ];
+        
+        
+        $result = mesaModelo::pedidos_activos_modelo($dataPedidoActivo);
+
+        $tabla = '<div style="overflow-y:scroll;height:400px;">
+                 <table class="table" style="height: 200px;">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Mesa</th>
+                    <th scope="col">Estado</th>
+                </tr>
+                </thead>
+                <tbody>';
+                
+        $contador = 0;
+        while ($filas = odbc_fetch_array($result)) {
+            $contador++;
+            $tabla.='<tr>
+            <th scope="row">'.$contador.'</th>
+            <td>Mesa Nro. <strong>'.$filas["commes_nromesa"].'</strong></td>
+            <td>
+
+                <form action="'.SERVERURL.'finPedido" method="POST" enctype="multipart/form-data">
+                    <input type="text" hidden name="comcom_codigo"  value="'.$filas["comcom_codigo"].'">
+
+                    <button type="submit"  class="btn btn-outline-danger">Ocupada</button>
+                </form>
+            </td>
+        </tr>';
+        }
+        $tabla .= '
+        </tbody>
         </table>
         </div>';
 
