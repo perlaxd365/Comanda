@@ -15,10 +15,10 @@
 			$cliente = $_POST["cliente"];
 		} elseif (isset($_POST["comcom_codigo"])) {
 
-
+			$codigo_comanda=$_POST["comcom_codigo"];
 			require_once "./controladores/comandaControlador.php";
 			$claseComanda = new comandaControlador();
-			$est = $claseComanda->data_comanda_controlador($_POST["comcom_codigo"]);
+			$est = $claseComanda->data_comanda_controlador($codigo_comanda);
 
 			while ($estatico = odbc_fetch_array($est)) {
 				$mesa = $estatico["comcom_mesas"];
@@ -26,12 +26,11 @@
 				$nroMujeres = $estatico["comcom_cant_femenino"];
 				$nroNinios = $estatico["comcom_cant_nino"];
 				$cliente = $estatico["comcom_cliente_apenom"];
-
-
 				$commes_codigo = $estatico["commes_codigo"];
 			}
+			//OBTENER EL PISO POR EL CODIGO DE MESA
 			$comanda_mesa = $claseComanda->get_piso_mesa_controlador($commes_codigo);
-			$piso=$comanda_mesa["ambien_piso"];
+			$piso = $comanda_mesa["ambien_piso"];
 		}
 		?>
 		<input hidden name="piso" value="<?php echo $piso ?>">
@@ -43,6 +42,7 @@
 		<input hidden name="comper_codigo" value="<?php echo $_SESSION["comper_codigo"] ?>">
 		<input hidden name="usua_codigo" value="<?php echo $_SESSION["usua_codigo"] ?>">
 		<input hidden name="totalInputs" id="totalInputs">
+		<input hidden name="codigoComanda" id="codigoComanda" value="<?php if(isset($codigo_comanda)){echo $codigo_comanda;}  ?>">
 
 		<div class="card">
 			<div class="card-header">
@@ -159,12 +159,12 @@
 						}
 					</style>
 
-					<div id="loading" style="display: none;">
-						<img width="80" class="rounded mx-auto d-block" height="50" src="<?php echo SERVERURL ?>vistas/images/loading.gif" alt="">
-					</div>
 
 					<div class="card-header">
-						<strong>Productos</strong>
+						<strong>Productos<div id="loading" style="display: none;">
+								<img width="80" class="rounded mx-auto d-block" height="50" src="<?php echo SERVERURL ?>vistas/images/loading.gif" alt="">
+							</div>
+						</strong>
 					</div>
 					<div class="RespuestaAjax" id="RespuestaAjax"></div>
 
@@ -459,7 +459,6 @@
 
 	function enviarDatos() {
 
-
 		var precio_pro = $("input[name='precio_pro\\[\\]']").map(function() {
 			return $(this).val();
 		}).get();
@@ -511,6 +510,13 @@
 				var usua_codigo = document.getElementsByName("usua_codigo")[0].value;
 				var preciototal = document.getElementsByName("preciototal")[0].value;
 				var totalInputs = document.getElementsByName("totalInputs")[0].value;
+
+				//Adicionar producto
+
+				
+				var codigo_comanda =  document.getElementsByName("codigoComanda")[0].value;
+
+
 				//creamos array
 				var arrayProducto = new Array();
 				var arrayCantidad = new Array();
@@ -596,7 +602,8 @@
 						comper_codigo: comper_codigo,
 						usua_codigo: usua_codigo,
 						preciototal: preciototal,
-						totalInputs: totalInputs
+						totalInputs: totalInputs,
+						codigo_comanda : codigo_comanda
 					},
 					error: function() {
 						$("#respuesta").attr("disabled", false);

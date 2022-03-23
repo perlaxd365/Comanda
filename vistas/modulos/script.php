@@ -25,3 +25,5 @@
   <script src="<?php echo SERVERURL;?>vistas/js/sweetalert2.min.js"></script>
   
   
+  <script src="<?php echo SERVERURL;?>vistas/js/funcioncarlos.js"></script>
+  <script src="<?php echo SERVERURL;?>vistas/js/cortesia.js"></script>

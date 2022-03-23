@@ -10,7 +10,8 @@ class comandaControlador extends comandaModelo
 
     public static function agregar_comanda_controlador()
     {
-        //Dos de comanda
+        //codigo de comanda codigo_comanda
+        $codigo_comanda_existente = $_POST["codigo_comanda"];
 
         //Arreglos de producto
         $id_producto = $_POST["producto"];
@@ -201,11 +202,13 @@ class comandaControlador extends comandaModelo
 
         ];
 
+        //validamos que este entrando nuevo pedido, de lo contrario no agregamos y nos pasamos a agregar detalle
+        if( $codigo_comanda_existente=='' ||  $codigo_comanda_existente==null){
+            $insertComanda = comandaModelo::agregar_comanda_modelo($dataComanda);
+        }
+       
 
-
-        $insertComanda = comandaModelo::agregar_comanda_modelo($dataComanda);
-
-        if ($insertComanda >= 1) {
+        if ($insertComanda >= 1 || (isset($codigo_comanda_existente) && $codigo_comanda_existente!='')) {
 
             for ($i = 0; $i < $totalInputs; $i++) {
 
@@ -219,7 +222,16 @@ class comandaControlador extends comandaModelo
 
                 $corte = '';
                 $obs = '';
-                $segundoContador=1;
+                //obtener ultimo codigo de comanda detalle para evitar duplicidad
+                if(isset($codigo_comanda_existente) && $codigo_comanda_existente!=''){
+                    $dataCodigo=["comcom_codigo"=>$codigo_comanda_existente];
+                    
+            $ultimoId = comandaModelo::get_nro_item_comanda_detalle($dataCodigo);
+            $segundoContador=$ultimoId["ultimoId"]+1;
+                }else{
+
+                    $segundoContador=1;
+                }
                 for ($i = 0; $i < $totalInputs; $i++) {
                     
                         $codigoPro=["prod_codigo"=>$id_producto[$i]];
@@ -240,6 +252,11 @@ class comandaControlador extends comandaModelo
                             $obs = "SI";
                         }
                     $id_pro=$id_producto[$i];
+                    //validamos si el codigo es nuevo o existente
+                
+                    if (isset($codigo_comanda_existente) && $codigo_comanda_existente!='') {
+                        $codigo=$codigo_comanda_existente;
+                    }
 
                     $dataComandaDetalle = [
 
@@ -289,11 +306,14 @@ class comandaControlador extends comandaModelo
             }
             if ($insertComandaDetalle >= 1) {
 
-                $alerta = [
-                    "Alerta" => "recargar",
-                    "Titulo" => "Completado",
-                    "Texto" => "Exito al registrar comanda",
-                    "Tipo" => "success"
+                    
+                    $alerta = [
+
+                        "Alerta" => "pagina",
+                        "Titulo" => "Completado",
+                        "Texto" => "Exito al registrar comanda",
+                        "Tipo" => "success",
+                        "Contenido" => "pedActivoList"
                     ];
             }else{
                 $alerta = [
@@ -325,5 +345,30 @@ class comandaControlador extends comandaModelo
     public function get_piso_mesa_controlador($codigo_mesa){
         $data=["commes_codigo"=>$codigo_mesa];
         return comandaModelo::get_piso_mesa_modelo($data);
+    }
+    
+    public function update_cortesia_comanda_detalle_controlador(){
+        $data=[
+            "comcom_codigo"=>$_POST["comcom_codigo"],
+            "cocode_item"=>$_POST["cocode_item"]
+        ];
+        $guardar=comandaModelo::update_cortesia_comanda_detalle_modelo($data);
+        if ($guardar>=1) { 
+            $alerta = [
+                "Alerta" => "recargar",
+                "Titulo" => "Completado",
+                "Texto" => "Se añadió cortesía correctamente",
+                "Tipo" => "success"
+            ];
+        }else{
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Algo salió mal",
+                "Texto" => "No se agregar cortesía",
+                "Tipo" => "error"
+            ];
+        }
+        
+        return mainModel::sweet_alert($alerta);
     }
 }

@@ -206,4 +206,23 @@ class comandaModelo extends mainModel
         
         return $sql;
     }
+    protected function get_nro_item_comanda_detalle($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT MAX(cocode_item) as ultimoId FROM comand_comandadetalle WHERE comcom_codigo=?");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"]));
+		$sql = odbc_fetch_array($consulta);
+        
+        return $sql;
+    }
+	
+    protected function update_cortesia_comanda_detalle_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comandadetalle SET cocode_cortesia='SI' WHERE comcom_codigo=? AND cocode_item=?; ");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["cocode_item"]));
+		$sql = odbc_num_rows($consulta);
+        
+        return $sql;
+    }
 }

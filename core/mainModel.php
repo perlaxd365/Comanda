@@ -228,6 +228,26 @@ class mainModel
 									</script>
 									";
 		}
+		//CONDICION PARA NUEVA PAGINA
+		elseif ($datos['Alerta'] == "pagina") {
+
+			$url = SERVERURL;
+			$contenido = $datos['Contenido'];
+			$pagina = $url . $contenido;
+			$alerta = "
+							<script>
+							swal({
+								title: '" . $datos['Titulo'] . "',
+								text: '" . $datos['Texto'] . "',
+								type:'" . $datos['Tipo'] . "',
+								confirmButtonText: 'Aceptar'
+								}).then(function(){
+									window.location='" . $pagina . "';
+								
+									});
+									</script>
+									";
+		}
 		return $alerta;
 	}
 }

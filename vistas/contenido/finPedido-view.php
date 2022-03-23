@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <?php
 if (isset($_POST["comcom_codigo"])) {
 
@@ -30,7 +33,7 @@ if (isset($_POST["comcom_codigo"])) {
 						Espera <TEXT style="color: red;">(E)</TEXT> , Atendido <TEXT style="color: green;"> (A)</TEXT>
 					</div>
 
-					<div style="overflow-y:scroll;height:300px;">
+					<div style="overflow-y:scroll;height:400px;">
 						<table style="height: 200px;" class="total-table">
 
 
@@ -61,7 +64,20 @@ if (isset($_POST["comcom_codigo"])) {
 										<td><button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></td>
 										<td><button type="button" class="btn btn-outline-success">A</button></td>
 										<td>
-											<div class="row"><button type="button" onclick="eliminar('+a+')" class="btn btn-outline-danger">x</button> <button type="button" class="btn btn-outline-success">✓</button></div>
+											<div class="row">
+												<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="delete" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
+
+													<button type="submit" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>" class="btn btn-outline-danger">x</button>
+												</form>
+												<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="save" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
+													<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
+													<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
+													<button type="submit" class="btn btn-outline-success <?php if($rows["cocode_cortesia"]=="SI"){echo'active';} ?>">✓</button>
+												</form>
+											</div>
+											<div class="RespuestaAjax" id="RespuestaAjax">
+											</div>
+
 										</td>
 									</tr>
 
@@ -85,11 +101,13 @@ if (isset($_POST["comcom_codigo"])) {
 
 				</div>
 			</div>
+			<br>
+			<br>
 			<div class="row">
 				<a href="javascript:history.back()" class="boxed-btn black">Volver</a>
-				<form action="<?php echo SERVERURL ?>selProducto"  method="post">
-				<input hidden type="text" name="comcom_codigo" value="<?php echo $comcom_codigo ?>" >
-						<input type="submit" class="boxed-btn black" value="Agregar">
+				<form action="<?php echo SERVERURL ?>selProducto" method="post">
+					<input hidden type="text" name="comcom_codigo" value="<?php echo $comcom_codigo ?>">
+					<input type="submit" class="boxed-btn black" value="Agregar">
 				</form>
 				<a href="<?php echo SERVERURL ?>home" class="boxed-btn black">Precuenta</a>
 			</div>
