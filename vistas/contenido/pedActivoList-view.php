@@ -1,3 +1,9 @@
+<script>
+window.onload = function() {
+  imprimirValor();
+}
+
+</script>
 <div class="cart-section mt-150 mb-150">
 	<div class="container">
 		<div class="row">
@@ -7,8 +13,8 @@
 					<h3 class="font-weight-bold text-center">Pedidos Activos </h3><br>
 
 
-					<select onchange="pedidoActivo(this)" class="custom-select">
-						<option value="">Abrir para seleccionar Piso</option>
+					<select id="" onchange="pedidoActivo(this)" class="custom-select">
+						<option selected value="">Abrir para seleccionar Piso</option>
 
 						<?php
 
@@ -33,7 +39,7 @@
 						<br>
 
 						<div class="cart-buttons">
-							<a href="javascript:history.back()" class="boxed-btn black">Volver</a>
+							<a href="javascript:window.location='<?php echo SERVERURL?>home';" class="boxed-btn black">Volver</a>
 						</div>
 						<br>
 						<br>

@@ -219,10 +219,34 @@ class comandaModelo extends mainModel
     protected function update_cortesia_comanda_detalle_modelo($datos)
     {
 
-        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comandadetalle SET cocode_cortesia='SI' WHERE comcom_codigo=? AND cocode_item=?; ");
+        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comandadetalle SET cocode_cortesia=? WHERE comcom_codigo=? AND cocode_item=?; ");
+        $sql = odbc_execute($consulta, array($datos["cortesia"],$datos["comcom_codigo"],$datos["cocode_item"]));
+		$sql = odbc_num_rows($consulta);
+        
+        return $sql;
+    }
+	
+    protected function delete_comanda_detalle_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "DELETE FROM comand_comandadetalle WHERE comcom_codigo=? AND cocode_item=?; ");
         $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["cocode_item"]));
 		$sql = odbc_num_rows($consulta);
         
         return $sql;
+    }	
+    protected function observacion_comanda_detalle_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT cocode_observaciones FROM comand_comandadetalle WHERE comcom_codigo=? AND cocode_item=?; ");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["cocode_item"]));
+        return $consulta;
+    }
+    protected function actualizar_observacion_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comandadetalle SET cocode_observaciones=? WHERE comcom_codigo=? AND cocode_item=?;  ");
+        $sql = odbc_execute($consulta, array($datos["observacion"],$datos["comcom_codigo"],$datos["cocode_item"]));
+        return $consulta;
     }
 }

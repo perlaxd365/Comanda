@@ -1,6 +1,7 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 <?php
 if (isset($_POST["comcom_codigo"])) {
 
@@ -33,8 +34,8 @@ if (isset($_POST["comcom_codigo"])) {
 						Espera <TEXT style="color: red;">(E)</TEXT> , Atendido <TEXT style="color: green;"> (A)</TEXT>
 					</div>
 
-					<div style="overflow-y:scroll;height:400px;">
-						<table style="height: 200px;" class="total-table">
+					<div style="overflow-y:scroll;height:600px;">
+						<table style="height: 300px;" class="total-table">
 
 
 							<thead class="total-table-head">
@@ -56,23 +57,29 @@ if (isset($_POST["comcom_codigo"])) {
 								?>
 									<tr class="total-data total-data-1">
 										<td style="width:1px"><strong><?php echo $contador; ?></strong></td>
-										<td style="width:750px;"><strong><?php echo $rows["cocode_producto"]; ?></strong></td>
+										<td style="width:750px;"><strong><?php echo $rows["cocode_producto"]; ?></strong><br>S/ <?php echo utf8_encode(mainModel::moneyFormat($rows["cocode_precio_soles"], "USD")) ?></td>
 										<td class="text-center">
-											<input min="1" style="height:40px; width : 50px;" type="number" class="form-control" value="<?php echo (int)$rows["cocode_cantidad"] ?>">
+											<input min="1" style="height:40px; width : 30px;" type="number" class="form-control" value="<?php echo (int)$rows["cocode_cantidad"] ?>">
 										</td>
 
-										<td><button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></td>
+										<td><button type="button" onclick='llenarObser(<?php echo $rows["comcom_codigo"] ?>,<?php echo $rows["cocode_item"]; ?>);' class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></td>
 										<td><button type="button" class="btn btn-outline-success">A</button></td>
 										<td>
 											<div class="row">
 												<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="delete" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
-
-													<button type="submit" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>" class="btn btn-outline-danger">x</button>
+													<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
+													<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
+													<input type="hidden" name="eliminarProducto">
+													<button type="submit" class="btn btn-outline-danger">x</button>
 												</form>
 												<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="save" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
 													<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
 													<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
-													<button type="submit" class="btn btn-outline-success <?php if($rows["cocode_cortesia"]=="SI"){echo'active';} ?>">✓</button>
+													<input type="hidden" name="cocode_cortesia" value="<?php echo $rows["cocode_cortesia"]; ?>">
+													<input type="hidden" name="cortesiaProducto">
+													<button type="submit" class="btn btn-outline-success <?php if ($rows["cocode_cortesia"] == "SI") {
+																												echo 'active';
+																											} ?>">✓</button>
 												</form>
 											</div>
 											<div class="RespuestaAjax" id="RespuestaAjax">
@@ -138,15 +145,10 @@ if (isset($_POST["comcom_codigo"])) {
 					</button>
 				</div>
 				<div class="modal-body">
-					<form class="form-inline">
-						<div class="form-group col-12">
-							<label for="inputPassword2" class="sr-only">Observaciones</label>
-							<textarea class="form-control" id="exampleFormControlTextarea1" rows="3" cols="100"></textarea>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-							<button type="button" class="btn btn-primary">Guardar</button>
-					</form>
+					<div id="loading" style="display: none;">
+						<img width="80" class="rounded mx-auto d-block" height="50" src="<?php echo SERVERURL ?>vistas/images/loading.gif" alt="">
+					</div>
+					<div id="observacionTexto"></div>
 				</div>
 			</div>
 		</div>
@@ -176,3 +178,62 @@ if (isset($_POST["comcom_codigo"])) {
                         </div>';
 }
 ?>
+
+<script>
+	function llenarObser(codigo, item) {
+		$.ajax({
+			url: "<?php echo SERVERURL; ?>ajax/comandaAjax.php",
+			method: "POST",
+			data: {
+				"comandaObser": codigo,
+				"item": item
+			},
+			beforeSend: function() {
+				document.getElementById("loading").style.display = "block";
+			},
+			error: function(respuesta) {
+				document.getElementById("loading").style.display = "none";
+				$("#observacionTexto").attr("disabled", false);
+				$("#observacionTexto").html(respuesta);
+			},
+			success: function(respuesta) {
+				document.getElementById("loading").style.display = "none";
+				$("#observacionTexto").attr("disabled", false);
+				$("#observacionTexto").html(respuesta);
+			}
+		})
+	}
+
+	function guardarObservación(codigo,item) {
+
+
+		var observacion = document.getElementsByName("obs_up")[0].value;
+
+
+		$.ajax({
+			url: "<?php echo SERVERURL; ?>ajax/comandaAjax.php",
+			method: "POST",
+			data: {
+				"codigo_comanda": codigo,
+				"item": item,
+				"observacion": observacion,
+				"actualizar_observacion":"si"
+			},
+			beforeSend: function() {
+				document.getElementById("loading").style.display = "block";
+			},
+			error: function(respuesta) {
+				$('#modalObservacion').modal('hide')
+				document.getElementById("loading").style.display = "none";
+				$("#observacionTexto").attr("disabled", false);
+				$("#observacionTexto").html(respuesta);
+			},
+			success: function(respuesta) {
+				$('#modalObservacion').modal('hide')
+				document.getElementById("loading").style.display = "none";
+				$("#observacionTexto").attr("disabled", false);
+				$("#observacionTexto").html(respuesta);
+			}
+		})
+	}
+</script>

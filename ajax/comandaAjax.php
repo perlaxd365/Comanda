@@ -14,10 +14,28 @@ if(isset($_POST['producto'])) {
 	echo $instancearComanda->agregar_comanda_controlador();
 
 
-}elseif(isset($_POST['comcom_codigo']) && isset($_POST['cocode_item'])) {
+}elseif(isset($_POST['cortesiaProducto'])) {
 	
 
 	echo $instancearComanda->update_cortesia_comanda_detalle_controlador();
+
+
+}elseif(isset($_POST['eliminarProducto'])) {
+	
+
+	echo $instancearComanda->delete_comanda_deltalle_controlador();
+
+
+}elseif(isset($_POST['comandaObser'])) {
+	
+
+	echo $instancearComanda->recuperar_observacion_controlador();
+
+
+}elseif(isset($_POST['actualizar_observacion'])) {
+	
+
+	echo $instancearComanda->actualizar_obser_controlador();
 
 
 }else{

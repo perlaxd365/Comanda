@@ -18,9 +18,10 @@ $(document).ready(function(){
    
            var textoAlerta;
            if(tipo==="save"){
-               textoAlerta="El producto seleccionado se convertirá en cortesía";
+               textoAlerta="¿Deseas actualizar la cortesía?";
            }else if(tipo==="delete"){
                textoAlerta="Se eliminará el producto";
+
            }else if(tipo==="update"){
                textoAlerta="Los datos del sistema serán actualizados";
            }else if(tipo==="login"){
@@ -33,7 +34,7 @@ $(document).ready(function(){
            swal({
                title: "¿Estás seguro?",   
                text: textoAlerta,   
-               type: "question",   
+               type: "warning",   
                showCancelButton: true,     
                confirmButtonText: "Aceptar",
                cancelButtonText: "Cancelar"

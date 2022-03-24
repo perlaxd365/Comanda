@@ -229,7 +229,7 @@
 					</script>
 					<br>
 					<div class="">
-						<a href="javascript:calcularTotal();" class="boxed-btn black">Cancelar</a>
+						<a href="javascript:window.location='<?php echo SERVERURL?>home';" class="boxed-btn black">Cancelar</a>
 						<a href="<?php echo SERVERURL ?>verPedido" class="boxed-btn black">Ver Pedido</a>
 						<a onclick="enviarDatos();" class="boxed-btn">Enviar</a>
 						<div id="respuesta"></div>

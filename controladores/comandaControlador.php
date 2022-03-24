@@ -313,7 +313,7 @@ class comandaControlador extends comandaModelo
                         "Titulo" => "Completado",
                         "Texto" => "Exito al registrar comanda",
                         "Tipo" => "success",
-                        "Contenido" => "pedActivoList"
+                        "Contenido" => "home"
                     ];
             }else{
                 $alerta = [
@@ -348,9 +348,17 @@ class comandaControlador extends comandaModelo
     }
     
     public function update_cortesia_comanda_detalle_controlador(){
+        $cortesia=$_POST["cocode_cortesia"];
+        if($cortesia=="SI"){
+            $cortesia="NO";
+        }else{
+            
+            $cortesia="SI";
+        }
         $data=[
             "comcom_codigo"=>$_POST["comcom_codigo"],
-            "cocode_item"=>$_POST["cocode_item"]
+            "cocode_item"=>$_POST["cocode_item"],
+            "cortesia"=>$cortesia
         ];
         $guardar=comandaModelo::update_cortesia_comanda_detalle_modelo($data);
         if ($guardar>=1) { 
@@ -365,6 +373,94 @@ class comandaControlador extends comandaModelo
                 "Alerta" => "simple",
                 "Titulo" => "Algo salió mal",
                 "Texto" => "No se agregar cortesía",
+                "Tipo" => "error"
+            ];
+        }
+        
+        return mainModel::sweet_alert($alerta);
+    }
+
+    
+    public function delete_comanda_deltalle_controlador(){
+        
+        $data=[
+            "comcom_codigo"=>$_POST["comcom_codigo"],
+            "cocode_item"=>$_POST["cocode_item"]
+        ];
+        $guardar=comandaModelo::delete_comanda_detalle_modelo($data);
+        if ($guardar>=1) { 
+            $alerta = [
+                "Alerta" => "recargar",
+                "Titulo" => "Completado",
+                "Texto" => "Se retiró producto correctamente",
+                "Tipo" => "success"
+            ];
+        }else{
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Algo salió mal",
+                "Texto" => "No se agregar cortesía",
+                "Tipo" => "error"
+            ];
+        }
+        
+        return mainModel::sweet_alert($alerta);
+    }
+
+    
+    public static function recuperar_observacion_controlador()
+    {   
+        $comcom_codigo=mainModel::limpiar_cadena($_POST['comandaObser']);
+        $cocode_item=mainModel::limpiar_cadena($_POST['item']);
+        $dataObs=[
+
+            "comcom_codigo" => $comcom_codigo,
+            "cocode_item" => $cocode_item
+
+        ];
+        
+        
+        $result = comandaModelo::observacion_comanda_detalle_modelo($dataObs);
+        $filas = odbc_fetch_array($result);
+        $tabla='
+        				
+                    <div class="form-group col-12">
+                        <label for="inputPassword2" class="sr-only">Observaciones</label>
+                            <textarea class="form-control" name="obs_up" id="exampleFormControlTextarea1" rows="3" cols="55">'.$filas["cocode_observaciones"].'</textarea>
+                            
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" onclick="guardarObservación('.$comcom_codigo.','.$cocode_item.');" class="btn btn-primary">Guardar</button>
+                
+                <div class="RespuestaAjax" id="RespuestaAjax">
+                </div>';
+
+
+        return $tabla;
+    }
+
+    public function actualizar_obser_controlador(){
+        
+        $data=[
+            "comcom_codigo"=>$_POST["codigo_comanda"],
+            "cocode_item"=>$_POST["item"],
+            "observacion"=>$_POST["observacion"]
+
+        ];
+        $guardar=comandaModelo::actualizar_observacion_modelo($data);
+        if ($guardar>=1) { 
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Completado",
+                "Texto" => "Se actualizó la observación correctamente",
+                "Tipo" => "success"
+            ];
+        }else{
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Algo salió mal",
+                "Texto" => "No se actualizó la observación",
                 "Tipo" => "error"
             ];
         }

@@ -247,7 +247,7 @@
 
 	document.getElementById("cancelarBoton").addEventListener("click", function(event) {
 		event.preventDefault();
-		javascript: history.back();
+		window.location='<?php echo SERVERURL?>home';
 	});
 
 
