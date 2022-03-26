@@ -19,10 +19,13 @@ $(document).ready(function(){
            var textoAlerta;
            if(tipo==="save"){
                textoAlerta="¿Deseas actualizar la cortesía?";
-           }else if(tipo==="delete"){
-               textoAlerta="Se eliminará el producto";
+           }else if(tipo==="cantidad"){
+            textoAlerta="¿Deseas actualizar la cantidad?";
 
-           }else if(tipo==="update"){
+        }else if(tipo==="delete"){
+            textoAlerta="Se eliminará el producto";
+
+        }else if(tipo==="update"){
                textoAlerta="Los datos del sistema serán actualizados";
            }else if(tipo==="login"){
                textoAlerta="Iniciar Sesión";

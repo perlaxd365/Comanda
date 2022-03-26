@@ -4,6 +4,10 @@ if ($peticionAjax) {
 } else {
     require_once "./modelos/comandaModelo.php";
 }
+/* incluir libreria printer*/
+require '/../vendor/mike42/escpos-php/autoload.php';
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
 class comandaControlador extends comandaModelo
 {
@@ -203,12 +207,14 @@ class comandaControlador extends comandaModelo
         ];
 
         //validamos que este entrando nuevo pedido, de lo contrario no agregamos y nos pasamos a agregar detalle
-        if( $codigo_comanda_existente=='' ||  $codigo_comanda_existente==null){
+        if ($codigo_comanda_existente == '' ||  $codigo_comanda_existente == null) {
             $insertComanda = comandaModelo::agregar_comanda_modelo($dataComanda);
+        } else {
+            $insertComanda = 2;
         }
-       
 
-        if ($insertComanda >= 1 || (isset($codigo_comanda_existente) && $codigo_comanda_existente!='')) {
+
+        if ($insertComanda >= 1 || (isset($codigo_comanda_existente) && $codigo_comanda_existente != '')) {
 
             for ($i = 0; $i < $totalInputs; $i++) {
 
@@ -223,39 +229,41 @@ class comandaControlador extends comandaModelo
                 $corte = '';
                 $obs = '';
                 //obtener ultimo codigo de comanda detalle para evitar duplicidad
-                if(isset($codigo_comanda_existente) && $codigo_comanda_existente!=''){
-                    $dataCodigo=["comcom_codigo"=>$codigo_comanda_existente];
-                    
-            $ultimoId = comandaModelo::get_nro_item_comanda_detalle($dataCodigo);
-            $segundoContador=$ultimoId["ultimoId"]+1;
-                }else{
+                if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
+                    $dataCodigo = ["comcom_codigo" => $codigo_comanda_existente];
 
-                    $segundoContador=1;
+                    $ultimoId = comandaModelo::get_nro_item_comanda_detalle($dataCodigo);
+                    $segundoContador = $ultimoId["ultimoId"] + 1;
+                } else {
+
+                    $segundoContador = 1;
                 }
+                $ordenContador = 0;
                 for ($i = 0; $i < $totalInputs; $i++) {
-                    
-                        $codigoPro=["prod_codigo"=>$id_producto[$i]];
-                        //CODIGO INTERNO DE PRODUCTO get_cod_interno_producto_modelo
-                        $geCodigoPro = comandaModelo::get_cod_interno_producto_modelo($codigoPro);
 
-                        $cod_int_pro=$geCodigoPro["prod_codigo_interno"];
+                    $ordenContador++;
+                    $codigoPro = ["prod_codigo" => $id_producto[$i]];
+                    //CODIGO INTERNO DE PRODUCTO get_cod_interno_producto_modelo
+                    $geCodigoPro = comandaModelo::get_cod_interno_producto_modelo($codigoPro);
 
-                        if ($cortesia[$i] == "") {
-                            $corte = "NO";
-                        } elseif ($cortesia[$i] == 1) {
-                            $corte = "SI";
-                        }
-                        if ($observacion[$i] == "") {
-                            $obs = "NO";
-                            $observacion[$i]=NULL;
-                        } else {
-                            $obs = "SI";
-                        }
-                    $id_pro=$id_producto[$i];
+                    $cod_int_pro = $geCodigoPro["prod_codigo_interno"];
+
+                    if ($cortesia[$i] == "") {
+                        $corte = "NO";
+                    } elseif ($cortesia[$i] == 1) {
+                        $corte = "SI";
+                    }
+                    if ($observacion[$i] == "") {
+                        $obs = "NO";
+                        $observacion[$i] = NULL;
+                    } else {
+                        $obs = "SI";
+                    }
+                    $id_pro = $id_producto[$i];
                     //validamos si el codigo es nuevo o existente
-                
-                    if (isset($codigo_comanda_existente) && $codigo_comanda_existente!='') {
-                        $codigo=$codigo_comanda_existente;
+
+                    if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
+                        $codigo = $codigo_comanda_existente;
                     }
 
                     $dataComandaDetalle = [
@@ -279,8 +287,8 @@ class comandaControlador extends comandaModelo
                         "cocode_conpropiedades" => "NO",
                         "cocode_conobservaciones" => $obs,
                         "cocode_observaciones" => $observacion[$i],
-                        "cocode_orden" => $i,
-                        "cocode_grupo" => $i,
+                        "cocode_orden" => $ordenContador,
+                        "cocode_grupo" => $ordenContador,
                         "prpr_codigo" => NULL,
                         "prpr_descripcion" => NULL,
                         "cocode_fact_atend" => 0,
@@ -302,20 +310,89 @@ class comandaControlador extends comandaModelo
                     ];
                     $insertComandaDetalle = comandaModelo::agregar_comanda_detalle_modelo($dataComandaDetalle);
                 }
-                
             }
             if ($insertComandaDetalle >= 1) {
+                $cod_comanda = '';
+                if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
+                    $cod_comanda = $codigo_comanda_existente;
+                } else {
+                    $cod_comanda = $codigo;
+                }
+                $dataCodigo = [
+                    "comcom_codigo" => $cod_comanda,
+                    "empr_codigo" => EMPRESA
+                ];
+                $listarTicketeras = comandaModelo::get_lista_ticket_modelo($dataCodigo);
 
+                $textoPrint = '';
+                while ($filas = odbc_fetch_array($listarTicketeras)) {
+                    $comare_codigo = $filas["comare_codigo"];
+                    $comare_ticketera = $filas["comare_ticketera"];
+                    $comare_nroimpresion = $filas["comare_nroimpresion"];
+                    $dataComposicion = [
+                        "comcom_codigo" => $cod_comanda,
+                        "comare_codigo" => $comare_codigo,
+                        "empr_codigo" => EMPRESA,
+                        "local_codigo" => LOCAL
+                    ];
+
+                    $pa_composicion = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
+                    if (odbc_num_rows($pa_composicion) > 0) {
+
+                        $campos=odbc_fetch_array($pa_composicion);
+
+                        $textoPrint .= "<br>";
+                        $textoPrint .= "MESA     :" . $campos["comcom_mesas"];
+                        $textoPrint .= "<br>";
+                        $textoPrint .= "PEDIDO   :" . $campos["comcom_numero"];
+                        $textoPrint .= "<br>";
+                        $textoPrint .= "ENVÍO    :" . $campos["fecha_modificacion"] . " " . $campos["hora_modificacion"];
+                        $textoPrint .= "<br>";
+                        $textoPrint .= "AGENTE   :" . $campos["comper_apenom"];
+                        $textoPrint .= "<br>";
+                        $textoPrint .= "CLIENTE  :" . $campos["comcom_cliente_apenom"];
+                        $textoPrint .= "<br>";
+
+
+                        $textoPrint .= "PRODUCTOS";
+                        while ($filasComposicion = odbc_fetch_array($pa_composicion)) {
+                            
+                        $textoPrint .= mainModel::moneyFormat($filasComposicion["cocode_cantidad"],"USD")  . " " . $filasComposicion["cocode_producto"];
+                        $textoPrint .= "<br>";
+                        }
+
+                        echo "--------------------------------------";
+                    }
+
+
+                    //APLICAR IMPRESION
+
+                    try {
+                        // Enter the share name for your USB printer here
+                        $connector = new WindowsPrintConnector($comare_ticketera);
                     
-                    $alerta = [
+                        /* Print a "Hello world" receipt" */
+                        $printer = new Printer($connector);
+                        $printer -> text($textoPrint);
+                        $printer -> cut();
+                        
+                        /* Close printer */
+                        $printer -> close();
+                    } catch (Exception $e) {
+                        echo "Couldn't print to this printer: " . $e -> getMessage() . "\n";
+                    }
+
+                    //FIN DE IMPRESION
+                }
+                /* $alerta = [
 
                         "Alerta" => "pagina",
                         "Titulo" => "Completado",
                         "Texto" => "Exito al registrar comanda",
                         "Tipo" => "success",
                         "Contenido" => "home"
-                    ];
-            }else{
+                    ]; */
+            } else {
                 $alerta = [
                     "Alerta" => "simple",
                     "Titulo" => "Algo salió mal",
@@ -323,7 +400,6 @@ class comandaControlador extends comandaModelo
                     "Tipo" => "error"
                 ];
             }
-
         } else {
             $alerta = [
                 "Alerta" => "simple",
@@ -332,43 +408,44 @@ class comandaControlador extends comandaModelo
                 "Tipo" => "error"
             ];
         }
-
-
-        return mainModel::sweet_alert($alerta);
+        return $textoPrint;
     }
 
-    public function data_comanda_controlador($codigo_comanda){
-        $data=["comcom_codigo"=>$codigo_comanda];
+    public function data_comanda_controlador($codigo_comanda)
+    {
+        $data = ["comcom_codigo" => $codigo_comanda];
         return comandaModelo::data_comanda_modelo($data);
     }
-    
-    public function get_piso_mesa_controlador($codigo_mesa){
-        $data=["commes_codigo"=>$codigo_mesa];
+
+    public function get_piso_mesa_controlador($codigo_mesa)
+    {
+        $data = ["commes_codigo" => $codigo_mesa];
         return comandaModelo::get_piso_mesa_modelo($data);
     }
-    
-    public function update_cortesia_comanda_detalle_controlador(){
-        $cortesia=$_POST["cocode_cortesia"];
-        if($cortesia=="SI"){
-            $cortesia="NO";
-        }else{
-            
-            $cortesia="SI";
+
+    public function update_cortesia_comanda_detalle_controlador()
+    {
+        $cortesia = $_POST["cocode_cortesia"];
+        if ($cortesia == "SI") {
+            $cortesia = "NO";
+        } else {
+
+            $cortesia = "SI";
         }
-        $data=[
-            "comcom_codigo"=>$_POST["comcom_codigo"],
-            "cocode_item"=>$_POST["cocode_item"],
-            "cortesia"=>$cortesia
+        $data = [
+            "comcom_codigo" => $_POST["comcom_codigo"],
+            "cocode_item" => $_POST["cocode_item"],
+            "cortesia" => $cortesia
         ];
-        $guardar=comandaModelo::update_cortesia_comanda_detalle_modelo($data);
-        if ($guardar>=1) { 
+        $guardar = comandaModelo::update_cortesia_comanda_detalle_modelo($data);
+        if ($guardar >= 1) {
             $alerta = [
                 "Alerta" => "recargar",
                 "Titulo" => "Completado",
                 "Texto" => "Se añadió cortesía correctamente",
                 "Tipo" => "success"
             ];
-        }else{
+        } else {
             $alerta = [
                 "Alerta" => "simple",
                 "Titulo" => "Algo salió mal",
@@ -376,26 +453,27 @@ class comandaControlador extends comandaModelo
                 "Tipo" => "error"
             ];
         }
-        
+
         return mainModel::sweet_alert($alerta);
     }
 
-    
-    public function delete_comanda_deltalle_controlador(){
-        
-        $data=[
-            "comcom_codigo"=>$_POST["comcom_codigo"],
-            "cocode_item"=>$_POST["cocode_item"]
+
+    public function delete_comanda_deltalle_controlador()
+    {
+
+        $data = [
+            "comcom_codigo" => $_POST["comcom_codigo"],
+            "cocode_item" => $_POST["cocode_item"]
         ];
-        $guardar=comandaModelo::delete_comanda_detalle_modelo($data);
-        if ($guardar>=1) { 
+        $guardar = comandaModelo::delete_comanda_detalle_modelo($data);
+        if ($guardar >= 1) {
             $alerta = [
                 "Alerta" => "recargar",
                 "Titulo" => "Completado",
                 "Texto" => "Se retiró producto correctamente",
                 "Tipo" => "success"
             ];
-        }else{
+        } else {
             $alerta = [
                 "Alerta" => "simple",
                 "Titulo" => "Algo salió mal",
@@ -403,35 +481,35 @@ class comandaControlador extends comandaModelo
                 "Tipo" => "error"
             ];
         }
-        
+
         return mainModel::sweet_alert($alerta);
     }
 
-    
+
     public static function recuperar_observacion_controlador()
-    {   
-        $comcom_codigo=mainModel::limpiar_cadena($_POST['comandaObser']);
-        $cocode_item=mainModel::limpiar_cadena($_POST['item']);
-        $dataObs=[
+    {
+        $comcom_codigo = mainModel::limpiar_cadena($_POST['comandaObser']);
+        $cocode_item = mainModel::limpiar_cadena($_POST['item']);
+        $dataObs = [
 
             "comcom_codigo" => $comcom_codigo,
             "cocode_item" => $cocode_item
 
         ];
-        
-        
+
+
         $result = comandaModelo::observacion_comanda_detalle_modelo($dataObs);
         $filas = odbc_fetch_array($result);
-        $tabla='
+        $tabla = '
         				
                     <div class="form-group col-12">
                         <label for="inputPassword2" class="sr-only">Observaciones</label>
-                            <textarea class="form-control" name="obs_up" id="exampleFormControlTextarea1" rows="3" cols="55">'.$filas["cocode_observaciones"].'</textarea>
+                            <textarea class="form-control" name="obs_up" id="exampleFormControlTextarea1" rows="3" cols="55">' . $filas["cocode_observaciones"] . '</textarea>
                             
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" onclick="guardarObservación('.$comcom_codigo.','.$cocode_item.');" class="btn btn-primary">Guardar</button>
+                        <button type="submit" onclick="guardarObservación(' . $comcom_codigo . ',' . $cocode_item . ');" class="btn btn-primary">Guardar</button>
                 
                 <div class="RespuestaAjax" id="RespuestaAjax">
                 </div>';
@@ -440,23 +518,24 @@ class comandaControlador extends comandaModelo
         return $tabla;
     }
 
-    public function actualizar_obser_controlador(){
-        
-        $data=[
-            "comcom_codigo"=>$_POST["codigo_comanda"],
-            "cocode_item"=>$_POST["item"],
-            "observacion"=>$_POST["observacion"]
+    public function actualizar_obser_controlador()
+    {
+
+        $data = [
+            "comcom_codigo" => $_POST["codigo_comanda"],
+            "cocode_item" => $_POST["item"],
+            "observacion" => $_POST["observacion"]
 
         ];
-        $guardar=comandaModelo::actualizar_observacion_modelo($data);
-        if ($guardar>=1) { 
+        $guardar = comandaModelo::actualizar_observacion_modelo($data);
+        if ($guardar >= 1) {
             $alerta = [
                 "Alerta" => "simple",
                 "Titulo" => "Completado",
                 "Texto" => "Se actualizó la observación correctamente",
                 "Tipo" => "success"
             ];
-        }else{
+        } else {
             $alerta = [
                 "Alerta" => "simple",
                 "Titulo" => "Algo salió mal",
@@ -464,7 +543,37 @@ class comandaControlador extends comandaModelo
                 "Tipo" => "error"
             ];
         }
-        
+
+        return mainModel::sweet_alert($alerta);
+    }
+
+
+    public function actualizar_cantidad_detalle_controlador()
+    {
+
+        $data = [
+            "comcom_codigo" => $_POST["comcom_codigo"],
+            "cocode_item" => $_POST["cocode_item"],
+            "cocode_cantidad" => $_POST["cantidad_productos"]
+
+        ];
+        $guardar = comandaModelo::actualizar_cantidad_producto_modelo($data);
+        if ($guardar >= 1) {
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Completado",
+                "Texto" => "Se actualizó la cantidad correctamente",
+                "Tipo" => "success"
+            ];
+        } else {
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Algo salió mal",
+                "Texto" => "No se actualizó la cantidad",
+                "Tipo" => "error"
+            ];
+        }
+
         return mainModel::sweet_alert($alerta);
     }
 }

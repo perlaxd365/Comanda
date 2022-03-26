@@ -59,7 +59,13 @@ if (isset($_POST["comcom_codigo"])) {
 										<td style="width:1px"><strong><?php echo $contador; ?></strong></td>
 										<td style="width:750px;"><strong><?php echo $rows["cocode_producto"]; ?></strong><br>S/ <?php echo utf8_encode(mainModel::moneyFormat($rows["cocode_precio_soles"], "USD")) ?></td>
 										<td class="text-center">
-											<input min="1" style="height:40px; width : 30px;" type="number" class="form-control" value="<?php echo (int)$rows["cocode_cantidad"] ?>">
+											<form name="formCantidadProductos" action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="cantidad" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
+												<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
+												<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
+												<input type="hidden" name="actualizar_cantidad">
+												<input min="1" ng-click="enviarForm();" name="cantidad_productos" style="height:40px; width : 30px;" type="number" class="form-control" value="<?php echo (int)$rows["cocode_cantidad"] ?>">
+											<input hidden type="submit" id="botonForm">
+											</form>
 										</td>
 
 										<td><button type="button" onclick='llenarObser(<?php echo $rows["comcom_codigo"] ?>,<?php echo $rows["cocode_item"]; ?>);' class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></td>
@@ -180,6 +186,10 @@ if (isset($_POST["comcom_codigo"])) {
 ?>
 
 <script>
+	function enviarForm() {
+		document.getElementById("botonForm").click();
+	}
+
 	function llenarObser(codigo, item) {
 		$.ajax({
 			url: "<?php echo SERVERURL; ?>ajax/comandaAjax.php",
@@ -204,7 +214,7 @@ if (isset($_POST["comcom_codigo"])) {
 		})
 	}
 
-	function guardarObservación(codigo,item) {
+	function guardarObservación(codigo, item) {
 
 
 		var observacion = document.getElementsByName("obs_up")[0].value;
@@ -217,7 +227,7 @@ if (isset($_POST["comcom_codigo"])) {
 				"codigo_comanda": codigo,
 				"item": item,
 				"observacion": observacion,
-				"actualizar_observacion":"si"
+				"actualizar_observacion": "si"
 			},
 			beforeSend: function() {
 				document.getElementById("loading").style.display = "block";

@@ -249,4 +249,33 @@ class comandaModelo extends mainModel
         $sql = odbc_execute($consulta, array($datos["observacion"],$datos["comcom_codigo"],$datos["cocode_item"]));
         return $consulta;
     }
+
+    protected function actualizar_cantidad_producto_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comandadetalle SET cocode_cantidad=? WHERE comcom_codigo=? AND cocode_item=?; ");
+        $sql = odbc_execute($consulta, array($datos["cocode_cantidad"],$datos["comcom_codigo"],$datos["cocode_item"]));
+		$sql = odbc_num_rows($consulta);
+        
+        return $sql;
+    }	
+    protected function get_lista_ticket_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "CALL pa_comanda_lista_ticketeras_x_comanda(?,?)");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["empr_codigo"]));
+        
+        return $consulta;
+    }
+    protected function get_lista_composicion_comanda_imprimir_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "CALL pa_comanda_lista_comanda_para_imprimir_en_areas(?,?,?,?)");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["comare_codigo"],$datos["empr_codigo"],$datos["local_codigo"]));
+        
+        return $consulta;
+    }
+	
+
+	
 }

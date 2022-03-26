@@ -408,13 +408,9 @@
 	function eliminar(n) {
 		jQuery("tr").remove(`#${n}`);
 		calcularTotal();
-		contador = contador - 1;
-		if (contador <= 0) {
-			contador = 0;
-
-
-
-		}
+		
+		var cant = $("#totalInputs").val();
+		document.getElementById('totalInputs').value = cant-1;
 
 
 	}

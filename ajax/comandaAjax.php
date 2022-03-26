@@ -38,6 +38,12 @@ if(isset($_POST['producto'])) {
 	echo $instancearComanda->actualizar_obser_controlador();
 
 
+}elseif(isset($_POST['actualizar_cantidad'])) {
+	
+
+	echo $instancearComanda->actualizar_cantidad_detalle_controlador();
+
+
 }else{
 
 	echo '<script> window.location.href="'.SERVERURL.'login/"</script>';
