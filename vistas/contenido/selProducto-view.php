@@ -15,7 +15,7 @@
 			$cliente = $_POST["cliente"];
 		} elseif (isset($_POST["comcom_codigo"])) {
 
-			$codigo_comanda=$_POST["comcom_codigo"];
+			$codigo_comanda = $_POST["comcom_codigo"];
 			require_once "./controladores/comandaControlador.php";
 			$claseComanda = new comandaControlador();
 			$est = $claseComanda->data_comanda_controlador($codigo_comanda);
@@ -42,11 +42,13 @@
 		<input hidden name="comper_codigo" value="<?php echo $_SESSION["comper_codigo"] ?>">
 		<input hidden name="usua_codigo" value="<?php echo $_SESSION["usua_codigo"] ?>">
 		<input hidden name="totalInputs" id="totalInputs">
-		<input hidden name="codigoComanda" id="codigoComanda" value="<?php if(isset($codigo_comanda)){echo $codigo_comanda;}  ?>">
+		<input hidden name="codigoComanda" id="codigoComanda" value="<?php if (isset($codigo_comanda)) {
+																			echo $codigo_comanda;
+																		}  ?>">
 
 		<div class="card">
 			<div class="card-header">
-				<strong>Registro de Nuevo Pedido</strong>
+				<strong>Datos de Pedido</strong>
 			</div>
 			<div class="card-body">
 				<blockquote class="blockquote mb-0">
@@ -228,10 +230,27 @@
 						}
 					</script>
 					<br>
-					<div class="">
-						<a href="javascript:window.location='<?php echo SERVERURL?>home';" class="boxed-btn black">Cancelar</a>
-						<a href="<?php echo SERVERURL ?>verPedido" class="boxed-btn black">Ver Pedido</a>
-						<a onclick="enviarDatos();" class="boxed-btn">Enviar</a>
+					<div class="row">
+							<input type="submit" onclick="window.location='<?php echo SERVERURL ?>home';" style="color: white; " class="black" value="Cancelar">
+						<?php
+						if (isset($_POST["comcom_codigo"])) {
+						?>
+							<form action="<?php echo SERVERURL ?>finPedido" method="post">
+								<input type="hidden" name="comcom_codigo" value="<?php echo $_POST["comcom_codigo"]; ?>">
+								<input type="submit" style="color: white; " class="black" value="Ver Pedido">
+							</form>
+
+							<input type="submit" onclick="enviarDatos();" style="color: white; " class="black" value="Agregar">
+						<?php
+						} else {
+						?>
+
+							<input type="submit" onclick="enviarDatos();" style="color: white; " class="black" value="Enviar">
+						<?php
+						}
+
+						?>
+
 						<div id="respuesta"></div>
 
 					</div>
@@ -292,8 +311,9 @@
 		var total = 0
 
 		for (let index = 0; index < precio_pro.length; index++) {
-
-			total = total + precio_pro[index] * cantidad[index];
+			var primerprecio = precio_pro[index];
+			var precio = primerprecio.replace(",", "");
+			total = total + precio * cantidad[index];
 		}
 		document.getElementById('totalPrecio').value = total.toFixed(2);
 	}
@@ -375,6 +395,8 @@
 
 			total = total + parseFloat(precioDetalle[nrotabla]);
 		});
+		var primerprecio = precioDetalle[nrotabla];
+		var precio = primerprecio.replace(",", "");
 
 		var div = document.createElement('tr');
 		div.className = "total-data";
@@ -387,7 +409,7 @@
 		div.innerHTML += '<td><input id="cantidad" name="cantidad[]" style="height:40px; width : 50px;" type="number" min="1" required onchange="calcularTotal();" onkeydown="calcularTotal();" onkeypress="calcularTotal();" onkeyup="calcularTotal();"  class="form-control" value="1"></td>';
 		div.innerHTML += '<input hidden name="id_producto[]" value="' + id_producto[nrotabla] + '">';
 		div.innerHTML += '<input hidden name="desc_pro[]" value="' + nombreDetalle[nrotabla] + '">';
-		div.innerHTML += '<input hidden name="precio_pro[]" value="' + precioDetalle[nrotabla] + '">';
+		div.innerHTML += '<input hidden name="precio_pro[]" value="' + precio + '">';
 		div.innerHTML += '<td><div class="row"><button type="button"  onclick=" eliminar(' + contador + ');calcularTotal();	" class="btn btn-outline-danger">x</button><button type="button" id="cortesia_btn' + contador + '" name="cortesia[]" class="btn btn-outline-success" onclick="cortesia(' + contador + ');">✓</button></div></td>';
 		document.getElementById('nuevoform').appendChild(div);
 		document.getElementById("alerta").style.display = "block";
@@ -408,9 +430,9 @@
 	function eliminar(n) {
 		jQuery("tr").remove(`#${n}`);
 		calcularTotal();
-		
+
 		var cant = $("#totalInputs").val();
-		document.getElementById('totalInputs').value = cant-1;
+		document.getElementById('totalInputs').value = cant - 1;
 
 
 	}
@@ -509,8 +531,8 @@
 
 				//Adicionar producto
 
-				
-				var codigo_comanda =  document.getElementsByName("codigoComanda")[0].value;
+
+				var codigo_comanda = document.getElementsByName("codigoComanda")[0].value;
 
 
 				//creamos array
@@ -599,7 +621,7 @@
 						usua_codigo: usua_codigo,
 						preciototal: preciototal,
 						totalInputs: totalInputs,
-						codigo_comanda : codigo_comanda
+						codigo_comanda: codigo_comanda
 					},
 					error: function() {
 						$("#respuesta").attr("disabled", false);

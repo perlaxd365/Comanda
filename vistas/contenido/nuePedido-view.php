@@ -68,7 +68,7 @@
 								<div class="input-group-prepend">
 									<span class="input-group-text" id="validationTooltipUsernamePrepend">Hombres</span>
 								</div>
-								<input style="height:40px" name="nroHombres" id="nroHombres" minlength="0" max="20" type="Number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de  hombres" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend" >
+								<input onClick="this.select();"  style="height:40px" name="nroHombres" id="nroHombres" minlength="0" max="20" type="Number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de  hombres" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend" >
 
 							</div>
 						</div>
@@ -77,7 +77,7 @@
 								<div class="input-group-prepend">
 									<span class="input-group-text" id="validationTooltipUsernamePrepend">Mujeres</span>
 								</div>
-								<input style="height:40px" name="nroMujeres" id="nroMujeres" minlength="0" max="20" type="Number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de mujeres" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend">
+								<input onClick="this.select();"  style="height:40px" name="nroMujeres" id="nroMujeres" minlength="0" max="20" type="Number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de mujeres" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend">
 
 							</div>
 						</div>
@@ -86,7 +86,7 @@
 								<div class="input-group-prepend">
 									<span class="input-group-text" id="validationTooltipUsernamePrepend">Niños</span>
 								</div>
-								<input style="height:40px" name="nroNinios" id="nroNinios" minlength="0" max="20" type="number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de niños" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend">
+								<input onClick="this.select();"  style="height:40px" name="nroNinios" id="nroNinios" minlength="0" max="20" type="number" class="form-control" id="validationTooltipUsername" value="0" placeholder="Número de niños" min="0" max="10" aria-describedby="validationTooltipUsernamePrepend">
 
 							</div>
 						</div>

@@ -179,11 +179,11 @@ class comandaControlador extends comandaModelo
             "comcom_fecha" => $fechaactual,
             "comcom_hora" => $horaactual,
             "comcom_estado" => '01',
-            "comcom_montobase_soles" => mainModel::moneyFormat($montoSinIgv, "USD"),
+            "comcom_montobase_soles" => $montoSinIgv, "USD",
             "comcom_montobase_dolares" => NULL,
-            "comcom_montoigv_soles" => mainModel::moneyFormat($igv, "USD"),
+            "comcom_montoigv_soles" => $igv, "USD",
             "comcom_montoigv_dolares" => NULL,
-            "comcom_montototal_soles" => mainModel::moneyFormat($preciototal, "USD"),
+            "comcom_montototal_soles" => $preciototal, "USD",
             "comcom_montototal_dolares" => null,
             "comcom_tipocambio" => NULL,
             "comcom_porcigv" => 18,
@@ -265,7 +265,7 @@ class comandaControlador extends comandaModelo
                     if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
                         $codigo = $codigo_comanda_existente;
                     }
-
+                    //quitar coma
                     $dataComandaDetalle = [
 
                         "comcom_codigo" => $codigo,
@@ -276,10 +276,10 @@ class comandaControlador extends comandaModelo
                         "comoca_codigo" => NULL,
                         "comoca_abreviatura" => NULL,
                         "cocode_producto" => $descpro[$i],
-                        "cocode_precio_soles" => $preciopro[$i],
+                        "cocode_precio_soles" =>  $preciopro[$i],
                         "cocode_precio_dolares" => NULL,
                         "cocode_cantidad" => $cantidad[$i],
-                        "cocode_subtotal_soles" => $preciopro[$i] * $cantidad[$i],
+                        "cocode_subtotal_soles" =>  $preciopro[$i] * $cantidad[$i],
                         "cocode_subtotal_dolares" => NULL,
                         "cocode_cortesia" => $corte,
                         "cocode_cancelado" => "NO",
@@ -355,13 +355,17 @@ class comandaControlador extends comandaModelo
 
 
                         $textoPrint .= "PRODUCTOS";
+                        $textoPrint .= "<br>";
                         while ($filasComposicion = odbc_fetch_array($pa_composicion)) {
                             
                         $textoPrint .= mainModel::moneyFormat($filasComposicion["cocode_cantidad"],"USD")  . " " . $filasComposicion["cocode_producto"];
                         $textoPrint .= "<br>";
                         }
 
-                        echo "--------------------------------------";
+                        $textoPrint.= "--------------------------------------";
+
+
+                        
                     }
 
 
@@ -560,7 +564,7 @@ class comandaControlador extends comandaModelo
         $guardar = comandaModelo::actualizar_cantidad_producto_modelo($data);
         if ($guardar >= 1) {
             $alerta = [
-                "Alerta" => "simple",
+                "Alerta" => "recargar",
                 "Titulo" => "Completado",
                 "Texto" => "Se actualizó la cantidad correctamente",
                 "Tipo" => "success"

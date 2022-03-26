@@ -34,5 +34,14 @@ class mesaModelo extends mainModel
         
         return $consulta;
     }
+    protected function get_comanda_x_id_mesa_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT max(comcom_codigo) as comcom_codigo FROM comand_comanda  where commes_codigo=?;");
+        $sql = odbc_execute($consulta, array($datos["commes_codigo"]));
+		$sql = odbc_fetch_array($consulta);
+        
+        return $sql;
+    }
 
 }

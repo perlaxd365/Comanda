@@ -52,8 +52,10 @@ if (isset($_POST["comcom_codigo"])) {
 
 								<?php
 								$contador = 0;
+								$total=0;
 								while ($rows = odbc_fetch_array($filesL)) {
 									$contador++;
+									$total=$total+((int)$rows["cocode_cantidad"]*$rows["cocode_precio_soles"]);
 								?>
 									<tr class="total-data total-data-1">
 										<td style="width:1px"><strong><?php echo $contador; ?></strong></td>
@@ -63,7 +65,7 @@ if (isset($_POST["comcom_codigo"])) {
 												<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
 												<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
 												<input type="hidden" name="actualizar_cantidad">
-												<input min="1" ng-click="enviarForm();" name="cantidad_productos" style="height:40px; width : 30px;" type="number" class="form-control" value="<?php echo (int)$rows["cocode_cantidad"] ?>">
+												<input min="1" ng-click="enviarForm();" name="cantidad_productos" style="height:30px; width : 50px;" type="number" class="form-control" value="<?php echo (int)$rows["cocode_cantidad"] ?>">
 											<input hidden type="submit" id="botonForm">
 											</form>
 										</td>
@@ -98,6 +100,10 @@ if (isset($_POST["comcom_codigo"])) {
 
 								}
 								?>
+								<tr class="total-data total-data-1">
+									
+								<td colspan="6" style="width:1px"><strong>TOTAL:</strong> S/ <?php echo mainModel::moneyFormat($total,"USD"); ?></td>
+								</tr>
 							</tbody>
 						</table>
 					</div>
@@ -117,12 +123,16 @@ if (isset($_POST["comcom_codigo"])) {
 			<br>
 			<br>
 			<div class="row">
-				<a href="javascript:history.back()" class="boxed-btn black">Volver</a>
+							<input type="submit" onclick="history.back()" style="color: white; " class="black" value="Atrás">
+						
 				<form action="<?php echo SERVERURL ?>selProducto" method="post">
 					<input hidden type="text" name="comcom_codigo" value="<?php echo $comcom_codigo ?>">
-					<input type="submit" class="boxed-btn black" value="Agregar">
+					<input type="submit" style="color: white;" class="boxed-btn black" value="Agregar">
 				</form>
-				<a href="<?php echo SERVERURL ?>home" class="boxed-btn black">Precuenta</a>
+				<form action="" method="post">
+					<input hidden type="text" name="comcom_codigo" value="<?php echo $comcom_codigo ?>">
+					<input type="submit" style="color: white;" class="boxed-btn black" value="Precuenta">
+				</form>
 			</div>
 		</div>
 	</div>

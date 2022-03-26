@@ -72,8 +72,17 @@ class mesaControlador extends mesaModelo
                     <button type="submit" class="btn btn-outline-info">Iniciar Pedido</button>
                     </form>';
                 } else {
-    
-                    $tabla .= ' <td><button type="button" class="btn btn-outline-success">Ver Pedido</button></td>';
+                    $data=[
+                        "commes_codigo"=>$filas["commes_codigo"]
+                    ];
+                    $comanda=mesaModelo::get_comanda_x_id_mesa_modelo($data);
+                    $tabla .= '
+                    <td>
+                    <form id="form" action="'.SERVERURL .'finPedido" method="post">
+                        <input  type="hidden" name="comcom_codigo" value="'.$comanda["comcom_codigo"].'">
+                        <button type="submit" class="btn btn-outline-success" >Ver Pedido</button>
+                    </form>
+                    </td>';
                 }
 
             }
