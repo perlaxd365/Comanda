@@ -57,6 +57,7 @@ class loginControlador extends loginModelo
 
 			$_SESSION['usua_codigo'] = $seguUsuario["usua_codigo"];
 			$_SESSION['comper_codigo'] = $seguUsuario["comper_codigo"];
+			$_SESSION['comper_apenom'] = $filas["comper_apenom"];
 			$_SESSION['codigo_usuario_comanda'] = $GLOBALS;
 			$_SESSION['token_comanda'] = md5(uniqid(mt_rand(), true));
 			$url = SERVERURL . "home";

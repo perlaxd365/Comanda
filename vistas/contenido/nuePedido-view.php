@@ -59,7 +59,7 @@
 								<div class="input-group-prepend">
 									<span class="input-group-text" id="validationTooltipUsernamePrepend">Cliente</span>
 								</div>
-								<input style="height:40px" name="cliente" id="cliente" type="text" class="form-control" id="validationTooltipUsername" placeholder="Nombres del cliente" aria-describedby="validationTooltipUsernamePrepend" required>
+								<input autocomplete="off" autofocus style="height:40px" name="cliente" id="cliente" type="text" class="form-control" id="validationTooltipUsername" placeholder="Nombres del cliente" aria-describedby="validationTooltipUsernamePrepend" required>
 
 							</div>
 						</div>

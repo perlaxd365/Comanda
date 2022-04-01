@@ -39,7 +39,7 @@
             <p class="text-center fw-bold mx-3 mb-0">Iniciar Sesión</p>
           </div>
           <div class="d-flex align-items-center my-4">
-            <input name="clave" class="form-control form-control-lg" style="width: 570px" type="password" inputmode="numeric" minlength="1" maxlength="20" size="8" placeholder="Ingresar contraseña" >
+            <input name="clave" autofocus class="form-control form-control-lg" style="width: 570px" type="password" inputmode="numeric" minlength="1" maxlength="20" size="8" placeholder="Ingresar contraseña" >
           </div>
 
 

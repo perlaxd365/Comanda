@@ -6,6 +6,7 @@ if ($peticionAjax) {
 }
 /* incluir libreria printer*/
 require '/../vendor/mike42/escpos-php/autoload.php';
+
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
@@ -37,7 +38,7 @@ class comandaControlador extends comandaModelo
         $preciototal = $_POST["preciototal"];
 
 
-        echo '<br><h6>datos de producto <br></h6>';
+        echo '<br><h6>Datos de producto <br></h6>';
         print_r($_POST);
         echo '<br><h6>Datos de Empresa<br></h6>';
         echo " Empresa => " . EMPRESA;
@@ -52,7 +53,7 @@ class comandaControlador extends comandaModelo
         //Consulta si existe caja aperturada # y datos
         $apertura_caja_nro = comandaModelo::get_num_caja_apertura_modelo($data_apertura);
         $apertura_caja_data = comandaModelo::get_caja_apertura_modelo($data_apertura);
-        echo '<br><h6>datos de apertura de caja <br></h6>';
+        echo '<br><h6>datos de apertura de caja </h6><br>';
         $apertu_fecha = $apertura_caja_data["apertu_fecha"];
         $apertu_turno = $apertura_caja_data["apertu_turno"];
         $apertu_hora = $apertura_caja_data["apertu_hora"];
@@ -106,12 +107,12 @@ class comandaControlador extends comandaModelo
         //crear cadena
         $ls_numero = $anio . substr(("000000" . $correlativo["numeromax"]), -6);
 
-        echo '<br><h6>Correlativo de este año </h6>';
+        echo '<br><h6>Correlativo de este año </h6><br>';
         echo "Correlativo : " . $ls_numero;
 
 
         //datos de usuario
-        echo '<br><h6>Datos de usuario<br></h6>';
+        echo '<br><h6>Datos de usuario</h6><br>';
         echo "ID : " . $_POST["comper_codigo"] . "<br>";
         echo "CODIGO : " . $_POST["usua_codigo"] . "";
         $usua_codigo = $_POST["usua_codigo"];
@@ -125,13 +126,13 @@ class comandaControlador extends comandaModelo
             "locale_codigo" => LOCAL
         ];
         $agente = comandaModelo::get_agente_comanda_modelo($data_agente);
-        echo '<br><h6>Nombre Apellido<br></h6>';
+        echo '<br><h6>Nombre Apellido Comper</h6><br>';
         $agente = $agente["comper_apenom"];
         echo "  " . $agente;
 
         //codigo de comanda
         $codigo = comandaModelo::get_codigo_comanda_modelo();
-        echo '<br><h6>Codigo de comanda<br></h6>';
+        echo '<br><h6>Codigo de comanda</h6><br>';
         $codigo = $codigo["codigo"];
         echo "  " . $codigo;
 
@@ -140,7 +141,7 @@ class comandaControlador extends comandaModelo
         $fecha = comandaModelo::fecha_hora_sistema();
         $fechaactual = date("Y-m-d", strtotime($fecha["fecha"]));
         $horaactual = date("H:i", strtotime($fecha["fecha"]));
-        echo '<br><h6>Fecha y Hora<br></h6>';
+        echo '<br><h6>Fecha y Hora</h6><br>';
         echo $fechaactual . " - " . $horaactual;
 
 
@@ -158,7 +159,7 @@ class comandaControlador extends comandaModelo
         //ID DE MESA
         $dataMesa = ["mesa" => $mesa];
         $getid = comandaModelo::get_id_mesa_modelo($dataMesa);
-        echo '<br><h6>ID Mesa<br></h6>';
+        echo '<br><h6>ID Mesa</h6><br>';
         $id_mesa = $getid["commes_codigo"];
         echo "<br> id_mesa = " . $id_mesa . "<br>";
 
@@ -283,7 +284,7 @@ class comandaControlador extends comandaModelo
                         "cocode_subtotal_dolares" => NULL,
                         "cocode_cortesia" => $corte,
                         "cocode_cancelado" => "NO",
-                        "cocode_enviado" => "SI",
+                        "cocode_enviado" => "NO",
                         "cocode_conpropiedades" => "NO",
                         "cocode_conobservaciones" => $obs,
                         "cocode_observaciones" => $observacion[$i],
@@ -336,57 +337,82 @@ class comandaControlador extends comandaModelo
                         "local_codigo" => LOCAL
                     ];
 
-                    $pa_composicion = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
-                    if (odbc_num_rows($pa_composicion) > 0) {
+                    $DetalleComanda = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
+                    $ticketeras = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
+                    if (odbc_num_rows($DetalleComanda) > 0) {
 
-                        $campos=odbc_fetch_array($pa_composicion);
-
-                        $textoPrint .= "<br>";
-                        $textoPrint .= "MESA     :" . $campos["comcom_mesas"];
-                        $textoPrint .= "<br>";
-                        $textoPrint .= "PEDIDO   :" . $campos["comcom_numero"];
-                        $textoPrint .= "<br>";
-                        $textoPrint .= "ENVÍO    :" . $campos["fecha_modificacion"] . " " . $campos["hora_modificacion"];
-                        $textoPrint .= "<br>";
-                        $textoPrint .= "AGENTE   :" . $campos["comper_apenom"];
-                        $textoPrint .= "<br>";
-                        $textoPrint .= "CLIENTE  :" . $campos["comcom_cliente_apenom"];
-                        $textoPrint .= "<br>";
+                        $campos = odbc_fetch_array($DetalleComanda);
 
 
-                        $textoPrint .= "PRODUCTOS";
-                        $textoPrint .= "<br>";
-                        while ($filasComposicion = odbc_fetch_array($pa_composicion)) {
-                            
-                        $textoPrint .= mainModel::moneyFormat($filasComposicion["cocode_cantidad"],"USD")  . " " . $filasComposicion["cocode_producto"];
-                        $textoPrint .= "<br>";
+                        $OpcionPrint = true;
+                        $textoPrintDetalle = '';
+                        while ($filasComposicion = odbc_fetch_array($ticketeras)) {
+                            $enviado = $filasComposicion["cocode_enviado"];
+                            if ($enviado == "NO") {
+
+                                $textoPrintDetalle .= mainModel::moneyFormat($filasComposicion["cocode_cantidad"], "USD")  . " " . $filasComposicion["cocode_producto"];
+                                $textoPrintDetalle .= "<br>";
+                                $dataUpPrint = [
+
+                                    "comcom_codigo" => $cod_comanda,
+                                    "cocode_item" => $filasComposicion["cocode_item"]
+
+                                ];
+                                comandaModelo::actualizar_envio_print_producto_modelo($dataUpPrint);
+                            } elseif ($filasComposicion["cocode_enviado"] == "SI") {
+                            }
                         }
 
-                        $textoPrint.= "--------------------------------------";
+                        $alerta = [
+                            "Alerta" => "simple",
+                            "Titulo" => "Completado",
+                            "Texto" => "Se envio correctamente la comanda.",
+                            "Tipo" => "success"
+                        ];
 
 
-                        
+                        if ($textoPrintDetalle != '') {
+                            $textoPrint .= "<br>";
+                            $textoPrint .= "--------------------------------------";
+                            $textoPrint .= "<br>";
+                            $textoPrint .= "IMPRE.     : " . $comare_ticketera;
+                            $textoPrint .= "<br>";
+                            $textoPrint .= "MESA     : " . $campos["comcom_mesas"];
+                            $textoPrint .= "<br>";
+                            $textoPrint .= "PEDIDO   : " . $campos["comcom_numero"];
+                            $textoPrint .= "<br>";
+                            $textoPrint .= "ENVÍO    : " . $campos["fecha_modificacion"] . " " . $campos["hora_modificacion"];
+                            $textoPrint .= "<br>";
+                            $textoPrint .= "AGENTE   : " . $campos["comper_apenom"];
+                            $textoPrint .= "<br>";
+                            $textoPrint .= "CLIENTE  : " . $campos["comcom_cliente_apenom"];
+                            $textoPrint .= "<br>";
+
+
+                            $textoPrint .= "PRODUCTOS";
+                            $textoPrint .= "<br>";
+                            $textoPrint .= $textoPrintDetalle;
+                            //APLICAR IMPRESION
+                            try {
+                                // Enter the share name for your USB printer here
+                                $connector = new WindowsPrintConnector($comare_ticketera);
+
+                                /* Print a "Hello world" receipt" */
+                                $printer = new Printer($connector);
+                                $printer->text($textoPrint);
+                                $printer->cut();
+
+                                /* Close printer */
+                                $printer->close();
+                            } catch (Exception $e) {
+                                echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+                            }
+
+
+                            //FIN DE IMPRESION
+                        } else {
+                        }
                     }
-
-
-                    //APLICAR IMPRESION
-
-                    try {
-                        // Enter the share name for your USB printer here
-                        $connector = new WindowsPrintConnector($comare_ticketera);
-                    
-                        /* Print a "Hello world" receipt" */
-                        $printer = new Printer($connector);
-                        $printer -> text($textoPrint);
-                        $printer -> cut();
-                        
-                        /* Close printer */
-                        $printer -> close();
-                    } catch (Exception $e) {
-                        echo "Couldn't print to this printer: " . $e -> getMessage() . "\n";
-                    }
-
-                    //FIN DE IMPRESION
                 }
                 /* $alerta = [
 
@@ -412,7 +438,8 @@ class comandaControlador extends comandaModelo
                 "Tipo" => "error"
             ];
         }
-        return $textoPrint;
+        echo $textoPrint;
+        return mainModel::sweet_alert($alerta);
     }
 
     public function data_comanda_controlador($codigo_comanda)
