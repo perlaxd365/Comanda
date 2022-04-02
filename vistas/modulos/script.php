@@ -27,3 +27,4 @@
   
   <script src="<?php echo SERVERURL;?>vistas/js/funcioncarlos.js"></script>
   <script src="<?php echo SERVERURL;?>vistas/js/cortesia.js"></script>
+  <script src="<?php echo SERVERURL;?>vistas/js/precuenta.js"></script>

@@ -190,8 +190,16 @@ class comandaModelo extends mainModel
 
 	protected function data_comanda_modelo($datos)
 	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT * FROM  comand_comanda WHERE comcom_codigo = ? ;");
+		$sql = odbc_execute($consulta, array($datos["comcom_codigo"]));
+		return $consulta;
+	}
+    
+
+	protected function data_comanda_detalle_modelo($datos)
+	{
 		$consulta = odbc_prepare(mainModel::conectar(), "SELECT * FROM  comand_comandadetalle de INNER JOIN comand_comanda co ON  de.comcom_codigo =co.comcom_codigo
-		WHERE de.comcom_codigo = ? ;");
+				WHERE de.comcom_codigo = ? AND de.cocode_cancelado= 'NO'  ;");
 		$sql = odbc_execute($consulta, array($datos["comcom_codigo"]));
 		return $consulta;
 	}
@@ -227,6 +235,15 @@ class comandaModelo extends mainModel
     }
 	
     protected function delete_comanda_detalle_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comandadetalle SET cocode_cancelado='SI',usua_cancelado=?,fecha_cancelado=now() WHERE comcom_codigo=? AND cocode_item=?; ");
+        $sql = odbc_execute($consulta, array($datos["usua_codigo"],$datos["comcom_codigo"],$datos["cocode_item"]));
+		$sql = odbc_num_rows($consulta);
+        
+        return $sql;
+    }
+    protected function quitar_comanda_detalle_modelo($datos)
     {
 
         $consulta = odbc_prepare(mainModel::conectar(), "DELETE FROM comand_comandadetalle WHERE comcom_codigo=? AND cocode_item=?; ");
@@ -287,6 +304,24 @@ class comandaModelo extends mainModel
         return $sql;
     }	
 	
+
+    protected function get_precuenta_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "CALL pa_formato_impresion_precuenta(?,?,?)");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["empr_codigo"],$datos["local_codigo"]));
+        
+        return $consulta;
+    }
+    protected function verificar_atencion_comanda_detalle_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT cocode_atendido FROM comand_comandadetalle WHERE comcom_codigo=? AND cocode_item=?; ");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["cocode_item"]));
+		$sql = odbc_fetch_array($consulta);
+        
+        return $sql;
+    }
 
 	
 }

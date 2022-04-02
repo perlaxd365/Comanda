@@ -9,7 +9,7 @@
 						<!-- logo -->
 						<div class="site-logo"style="padding-left: 0.5rem; padding-right: 2.5rem; bottom: -5.2rem;" >
 							<a href="<?php echo SERVERURL ?>home" >
-								<img src="<?php SERVERURL?>vistas/images/ss.png"  alt="">
+								<img src="<?php SERVERURL?>vistas/images/logogaucho.png"  alt="">
 							</a>
 						</div>
 						<!-- logo -->

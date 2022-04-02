@@ -5,18 +5,18 @@
 <?php
 if (isset($_POST["comcom_codigo"])) {
 
-
-
 	require_once "./controladores/comandaControlador.php";
 	$classDoc = new comandaControlador();
 	$est = $classDoc->data_comanda_controlador($_POST["comcom_codigo"]);
-	$filesL = $classDoc->data_comanda_controlador($_POST["comcom_codigo"]);
+	$filesL = $classDoc->data_comanda_detalle_controlador($_POST["comcom_codigo"]);
 
 	while ($estatico = odbc_fetch_array($est)) {
 		$comcom_codigo = $estatico["comcom_codigo"];
 		$comcom_apenom = $estatico["comcom_cliente_apenom"];
 		$mesa = $estatico["comcom_mesas"];
 	}
+
+
 
 
 ?>
@@ -38,6 +38,7 @@ if (isset($_POST["comcom_codigo"])) {
 						<table style="height: 300px;" class="total-table">
 
 
+
 							<thead class="total-table-head">
 								<tr class="table-total-row">
 									<th>ID</th>
@@ -52,10 +53,10 @@ if (isset($_POST["comcom_codigo"])) {
 
 								<?php
 								$contador = 0;
-								$total=0;
+								$total = 0;
 								while ($rows = odbc_fetch_array($filesL)) {
 									$contador++;
-									$total=$total+((int)$rows["cocode_cantidad"]*$rows["cocode_precio_soles"]);
+									$total = $total + ((int)$rows["cocode_cantidad"] * $rows["cocode_precio_soles"]);
 								?>
 									<tr class="total-data total-data-1">
 										<td style="width:1px"><strong><?php echo $contador; ?></strong></td>
@@ -66,17 +67,18 @@ if (isset($_POST["comcom_codigo"])) {
 												<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
 												<input type="hidden" name="actualizar_cantidad">
 												<input min="1" ng-click="enviarForm();" name="cantidad_productos" style="height:30px; width : 50px;" type="number" class="form-control" value="<?php echo (int)$rows["cocode_cantidad"] ?>">
-											<input hidden type="submit" id="botonForm">
+												<input hidden type="submit" id="botonForm">
 											</form>
 										</td>
 
 										<td><button type="button" onclick='llenarObser(<?php echo $rows["comcom_codigo"] ?>,<?php echo $rows["cocode_item"]; ?>);' class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></td>
-										<td><button type="button" class="btn btn-outline-success">A</button></td>
+										<td><button type="button" class="btn btn-outline-success <?php if($rows["cocode_atendido"]=="SI"){echo "active";}?>">A</button></td>
 										<td>
 											<div class="row">
 												<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="delete" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
 													<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
 													<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
+													<input type="hidden" name="usua_codigo" value="<?php echo $_SESSION['usua_codigo']; ?>">
 													<input type="hidden" name="eliminarProducto">
 													<button type="submit" class="btn btn-outline-danger">x</button>
 												</form>
@@ -99,11 +101,27 @@ if (isset($_POST["comcom_codigo"])) {
 								<?php
 
 								}
+								if ($contador == 0) {
 								?>
-								<tr class="total-data total-data-1">
-									
-								<td colspan="6" style="width:1px"><strong>TOTAL:</strong> S/ <?php echo mainModel::moneyFormat($total,"USD"); ?></td>
-								</tr>
+
+									<tr>
+
+										<td colspan="6">
+											<div class="alert alert-warning" role="alert">
+												A la espera de nuevos productos.
+											</div>
+										</td>
+									</tr>
+								<?php
+								} else {
+								?>
+									<tr class="total-data total-data-1">
+
+										<td colspan="6" style="width:1px"><strong>TOTAL:</strong> S/ <?php echo mainModel::moneyFormat($total, "USD"); ?></td>
+									</tr>
+								<?php
+								}
+								?>
 							</tbody>
 						</table>
 					</div>
@@ -123,16 +141,18 @@ if (isset($_POST["comcom_codigo"])) {
 			<br>
 			<br>
 			<div class="row">
-							<input type="submit" onclick="history.back()" style="color: white; " class="black" value="Atrás">
-						
+				<input type="submit" onclick="window.location='<?php echo SERVERURL ?>pedActivoList';" style="color: white; " class="black" value="Atrás">
+
 				<form action="<?php echo SERVERURL ?>selProducto" method="post">
 					<input hidden type="text" name="comcom_codigo" value="<?php echo $comcom_codigo ?>">
 					<input type="submit" style="color: white;" class="boxed-btn black" value="Agregar">
 				</form>
-				<form action="" method="post">
-					<input hidden type="text" name="comcom_codigo" value="<?php echo $comcom_codigo ?>">
+				<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="save" class="FormularioPrecuentaAjax" autocomplete="off" enctype="multipart/form-data">
+
+					<input hidden type="text" name="comcom_codigo_precuenta" value="<?php echo $comcom_codigo ?>">
 					<input type="submit" style="color: white;" class="boxed-btn black" value="Precuenta">
 				</form>
+				<div id="RespuestaAjax" class="RespuestaAjax"></div>
 			</div>
 		</div>
 	</div>

@@ -31,6 +31,9 @@
 			//OBTENER EL PISO POR EL CODIGO DE MESA
 			$comanda_mesa = $claseComanda->get_piso_mesa_controlador($commes_codigo);
 			$piso = $comanda_mesa["ambien_piso"];
+		} else {
+
+			return $urlLocation = '<script>window.location="' . SERVERURL . 'home"</script>';
 		}
 		?>
 		<input hidden name="piso" value="<?php echo $piso ?>">
@@ -107,8 +110,8 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text" id="validationTooltipUsernamePrepend">Línea</span>
 									</div>
-									<select onchange="listar_sublinea(this); limpiarTabla();" name="buscar_linea" class="custom-select">
-										<option selected>Seleccionar Línea</option>
+									<select onchange="listar_sublinea(this); limpiarTabla(); limpiarBusqueda();" name="buscar_linea" class="custom-select">
+										<option value="" selected>Seleccionar Línea</option>
 
 
 										<?php require_once './controladores/productoControlador.php';
@@ -125,7 +128,7 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text" id="validationTooltipUsernamePrepend">Sub Línea</span>
 									</div>
-									<select id="datos_sublinea" onchange="limpiarTabla();" name="buscar_sublinea" class="custom-select">
+									<select id="datos_sublinea" onchange="limpiarTabla(); limpiarBusqueda();" name="buscar_sublinea" class="custom-select">
 										<option selected value="">Seleccionar Sublínea</option>
 									</select>
 								</div>
@@ -136,7 +139,7 @@
 										<span class="input-group-text" id="validationTooltipUsernamePrepend">Buscar</span>
 									</div>
 
-									<input autocomplete="off" class="form-control btn-mg" onkeypress="limpiarTabla()" onkeydown="limpiarTabla()" onkeyup="limpiarTabla()" name="busqueda" type="search" placeholder="Buscar" aria-label="Search">
+									<input autocomplete="off" class="form-control btn-mg" onkeypress="limpiarTabla()" onkeydown="limpiarTabla()" onkeyup="limpiarTabla()" name="busqueda" id="busqueda" type="search" placeholder="Buscar" aria-label="Search">
 								</div>
 							</div>
 							<div class="col-md-3 mb-3">
@@ -231,7 +234,7 @@
 					</script>
 					<br>
 					<div class="row">
-							<input type="submit" onclick="window.location='<?php echo SERVERURL ?>home';" style="color: white; " class="black" value="Cancelar">
+						<input type="submit" onclick="window.location='<?php echo SERVERURL ?>home';" style="color: white; " class="black" value="Cancelar">
 						<?php
 						if (isset($_POST["comcom_codigo"])) {
 						?>
@@ -264,28 +267,28 @@
 <br>
 <!-- Button trigger modal -->
 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-  Ver resultado
+	Ver resultado
 </button>
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">DATOS</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body container" id="respuesta">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
-  </div>
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">DATOS</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body container" id="respuesta">
+				...
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Save changes</button>
+			</div>
+		</div>
+	</div>
 </div>
 </body>
 
@@ -325,6 +328,10 @@
 
 <!-- Fin Mod-->
 <script type="text/javascript">
+	function limpiarBusqueda() {
+		document.getElementById("busqueda").value = "";
+	}
+
 	function calcularTotal() {
 
 		var precio_pro = $("input[name='precio_pro\\[\\]']").map(function() {

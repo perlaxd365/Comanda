@@ -1,8 +1,7 @@
 <script>
-window.onload = function() {
-  imprimirValor();
-}
-
+    document.addEventListener("DOMContentLoaded", function() {
+		$("#selectpiso option[value='0']").attr("selected",true);
+    });
 </script>
 <div class="cart-section mt-150 mb-150">
 	<div class="container">
@@ -13,7 +12,7 @@ window.onload = function() {
 					<h3 class="font-weight-bold text-center">Pedidos Activos </h3><br>
 
 
-					<select id="" onchange="pedidoActivo(this)" class="custom-select">
+					<select id="selectpiso" onchange="pedidoActivo(this)" class="custom-select">
 						<option selected value="">Abrir para seleccionar Piso</option>
 
 						<?php

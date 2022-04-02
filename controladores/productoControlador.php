@@ -47,8 +47,13 @@ class productoControlador extends productoModelo
 	   	ON a.prod_codigo=p.prod_codigo
 	   	WHERE a.empr_codigo = '01'
 	   	AND line_codigo = '02'
-	   	AND prod_vigencia = 'SI'
-";
+	   	AND prod_vigencia = 'SI'";
+		   
+
+		if (isset($busqueda) && $busqueda != ""  && ($linea_busqueda == "" ) && ($sublinea_busqueda=="" )) {
+
+			$consulta .= " AND prod_abreviatura LIKE '%$busqueda%'";
+		}
 
 		if (isset($linea_busqueda) && $linea_busqueda != "") {
 			$consulta .= " AND suli_codigo = '$linea_busqueda'";
@@ -56,7 +61,7 @@ class productoControlador extends productoModelo
 		if (isset($sublinea_busqueda) && $sublinea_busqueda != "") {
 			$consulta .= " AND ssli_codigo = '$sublinea_busqueda'";
 		}
-		if (isset($busqueda) && $busqueda != "") {
+		if (isset($busqueda) && $busqueda != "" && (isset($linea_busqueda) && $linea_busqueda != "") && (isset($sublinea_busqueda) && $sublinea_busqueda != "")) {
 
 			$consulta .= " AND prod_abreviatura LIKE '%$busqueda%'";
 		}
@@ -93,7 +98,8 @@ class productoControlador extends productoModelo
 
 		
 		$tabla .= '
-							</tbody></table>';if ($contador==0) {
+							</tbody></table>';
+							if ($contador==0) {
 								$tabla.='<h6 style="padding-right:30px">No se encontraron resultados</h6>';
 							}
 						$tabla.='

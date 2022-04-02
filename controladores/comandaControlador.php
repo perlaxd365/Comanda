@@ -76,345 +76,341 @@ class comandaControlador extends comandaModelo
             ];
         } else {
 
-            $alerta = [
-                "Alerta" => "simple",
-                "Titulo" => "Completado",
-                "Texto" => "Todos los datos estan preparados",
-                "Tipo" => "success"
+            //Get correlativo
+            $ls_numero = '';
+            //get año
+            $fecha = comandaModelo::fecha_hora_sistema();
+            //get año
+            echo $fecha["fecha"];
+            $anio = date("Y", strtotime($fecha["fecha"]));
+            //data parámetros
+            $datos = [
+                "anio" => $anio,
+                "empr_codigo" => EMPRESA,
+                "locale_codigo" => LOCAL
             ];
-        }
+            $correlativo = comandaModelo::get_correlativo_modelo($datos);
+            if (is_null($correlativo["numeromax"])) {
+                $correlativo["numeromax"] = 0;
+            } else {
+                $correlativo["numeromax"]++;
+            }
+            //crear cadena
+            $ls_numero = $anio . substr(("000000" . $correlativo["numeromax"]), -6);
+
+            echo '<br><h6>Correlativo de este año </h6><br>';
+            echo "Correlativo : " . $ls_numero;
 
 
-        //Get correlativo
-        $ls_numero = '';
-        //get año
-        $fecha = comandaModelo::fecha_hora_sistema();
-        //get año
-        echo $fecha["fecha"];
-        $anio = date("Y", strtotime($fecha["fecha"]));
-        //data parámetros
-        $datos = [
-            "anio" => $anio,
-            "empr_codigo" => EMPRESA,
-            "locale_codigo" => LOCAL
-        ];
-        $correlativo = comandaModelo::get_correlativo_modelo($datos);
-        if (is_null($correlativo["numeromax"])) {
-            $correlativo["numeromax"] = 0;
-        } else {
-            $correlativo["numeromax"]++;
-        }
-        //crear cadena
-        $ls_numero = $anio . substr(("000000" . $correlativo["numeromax"]), -6);
-
-        echo '<br><h6>Correlativo de este año </h6><br>';
-        echo "Correlativo : " . $ls_numero;
+            //datos de usuario
+            echo '<br><h6>Datos de usuario</h6><br>';
+            echo "ID : " . $_POST["comper_codigo"] . "<br>";
+            echo "CODIGO : " . $_POST["usua_codigo"] . "";
+            $usua_codigo = $_POST["usua_codigo"];
 
 
-        //datos de usuario
-        echo '<br><h6>Datos de usuario</h6><br>';
-        echo "ID : " . $_POST["comper_codigo"] . "<br>";
-        echo "CODIGO : " . $_POST["usua_codigo"] . "";
-        $usua_codigo = $_POST["usua_codigo"];
+            //recuperar agente
+            $id_comper = $_POST["comper_codigo"];
+            $data_agente = [
+                "comper_codigo" => $id_comper,
+                "empr_codigo" => EMPRESA,
+                "locale_codigo" => LOCAL
+            ];
+            $agente = comandaModelo::get_agente_comanda_modelo($data_agente);
+            echo '<br><h6>Nombre Apellido Comper</h6><br>';
+            $agente = $agente["comper_apenom"];
+            echo "  " . $agente;
+
+            //codigo de comanda
+            $codigo = comandaModelo::get_codigo_comanda_modelo();
+            echo '<br><h6>Codigo de comanda</h6><br>';
+            $codigo = $codigo["codigo"];
+            echo "  " . $codigo;
+
+            //Get fecha y hora actual
+            echo "<br>";
+            $fecha = comandaModelo::fecha_hora_sistema();
+            $fechaactual = date("Y-m-d", strtotime($fecha["fecha"]));
+            $horaactual = date("H:i", strtotime($fecha["fecha"]));
+            echo '<br><h6>Fecha y Hora</h6><br>';
+            echo $fechaactual . " - " . $horaactual;
 
 
-        //recuperar agente
-        $id_comper = $_POST["comper_codigo"];
-        $data_agente = [
-            "comper_codigo" => $id_comper,
-            "empr_codigo" => EMPRESA,
-            "locale_codigo" => LOCAL
-        ];
-        $agente = comandaModelo::get_agente_comanda_modelo($data_agente);
-        echo '<br><h6>Nombre Apellido Comper</h6><br>';
-        $agente = $agente["comper_apenom"];
-        echo "  " . $agente;
+            //SUBTOTAL , IGV Y TOTAL
+            echo '<br><h6>SUBTOTAL , IGV Y TOTAL<br></h6>';
+            $monto = $preciototal;
+            echo " <br>Monto " . $monto . " <br>";
+            $igv = $monto / 1.18;
+            echo "<br> igv = " . $igv . "<br>";
+            $montoSinIgv = $monto - $igv;
+            echo "<br> monto sin igv = " . $montoSinIgv . "<br>";
+            $total = $monto - $igv;
+            echo "<br> monto total= " . $total . "<br>";
 
-        //codigo de comanda
-        $codigo = comandaModelo::get_codigo_comanda_modelo();
-        echo '<br><h6>Codigo de comanda</h6><br>';
-        $codigo = $codigo["codigo"];
-        echo "  " . $codigo;
-
-        //Get fecha y hora actual
-        echo "<br>";
-        $fecha = comandaModelo::fecha_hora_sistema();
-        $fechaactual = date("Y-m-d", strtotime($fecha["fecha"]));
-        $horaactual = date("H:i", strtotime($fecha["fecha"]));
-        echo '<br><h6>Fecha y Hora</h6><br>';
-        echo $fechaactual . " - " . $horaactual;
-
-
-        //SUBTOTAL , IGV Y TOTAL
-        echo '<br><h6>SUBTOTAL , IGV Y TOTAL<br></h6>';
-        $monto = $preciototal;
-        echo " <br>Monto " . $monto . " <br>";
-        $igv = $monto / 1.18;
-        echo "<br> igv = " . $igv . "<br>";
-        $montoSinIgv = $monto - $igv;
-        echo "<br> monto sin igv = " . $montoSinIgv . "<br>";
-        $total = $monto - $igv;
-        echo "<br> monto total= " . $total . "<br>";
-
-        //ID DE MESA
-        $dataMesa = ["mesa" => $mesa];
-        $getid = comandaModelo::get_id_mesa_modelo($dataMesa);
-        echo '<br><h6>ID Mesa</h6><br>';
-        $id_mesa = $getid["commes_codigo"];
-        echo "<br> id_mesa = " . $id_mesa . "<br>";
+            //ID DE MESA
+            $dataMesa = ["mesa" => $mesa];
+            $getid = comandaModelo::get_id_mesa_modelo($dataMesa);
+            echo '<br><h6>ID Mesa</h6><br>';
+            $id_mesa = $getid["commes_codigo"];
+            echo "<br> id_mesa = " . $id_mesa . "<br>";
 
 
 
-        $dataComanda = [
-            "comcom_codigo" => $codigo,
-            "empr_codigo" => EMPRESA,
-            "apertu_fecha" => $apertu_fecha,
-            "apertu_turno" => $apertu_turno,
-            "apertu_hora" => $apertu_hora,
-            "commes_codigo" => $id_mesa,
-            "comper_codigo" => $id_comper,
-            "clie_codigo" => NULL,
-            "locale_codigo" => LOCAL,
-            "comcom_cliente_apenom" => $cliente,
-            "comcom_numero" => $ls_numero,
-            "comcom_fecha" => $fechaactual,
-            "comcom_hora" => $horaactual,
-            "comcom_estado" => '01',
-            "comcom_montobase_soles" => $montoSinIgv, "USD",
-            "comcom_montobase_dolares" => NULL,
-            "comcom_montoigv_soles" => $igv, "USD",
-            "comcom_montoigv_dolares" => NULL,
-            "comcom_montototal_soles" => $preciototal, "USD",
-            "comcom_montototal_dolares" => null,
-            "comcom_tipocambio" => NULL,
-            "comcom_porcigv" => 18,
-            "comcom_mesas" => $mesa,
-            "comcom_vigencia" => "SI",
-            "comcom_cant_masculino" => $nroHombres,
-            "comcom_cant_femenino" => $nroMujeres,
-            "comcom_cant_nino" => $nroNinios,
-            "comcom_impresion" => 0,
-            "comcom_fact_ant" => NULL,
-            "empr_codigo_factura" => EMPRESA,
-            "comcom_agente" => $agente,
-            "usua_eliminacion" => NULL,
-            "fecha_eliminacion" => NULL,
-            "usua_creacion" => $usua_codigo,
-            "fecha_creacion" => $fecha["fecha"],
-            "usua_modificacion" => NULL,
-            "fecha_modificacion" => NULL,
-            "usua_autoriza_eliminacion" => NULL
+            $dataComanda = [
+                "comcom_codigo" => $codigo,
+                "empr_codigo" => EMPRESA,
+                "apertu_fecha" => $apertu_fecha,
+                "apertu_turno" => $apertu_turno,
+                "apertu_hora" => $apertu_hora,
+                "commes_codigo" => $id_mesa,
+                "comper_codigo" => $id_comper,
+                "clie_codigo" => NULL,
+                "locale_codigo" => LOCAL,
+                "comcom_cliente_apenom" => $cliente,
+                "comcom_numero" => $ls_numero,
+                "comcom_fecha" => $fechaactual,
+                "comcom_hora" => $horaactual,
+                "comcom_estado" => '01',
+                "comcom_montobase_soles" => $montoSinIgv, "USD",
+                "comcom_montobase_dolares" => NULL,
+                "comcom_montoigv_soles" => $igv, "USD",
+                "comcom_montoigv_dolares" => NULL,
+                "comcom_montototal_soles" => $preciototal, "USD",
+                "comcom_montototal_dolares" => null,
+                "comcom_tipocambio" => NULL,
+                "comcom_porcigv" => 18,
+                "comcom_mesas" => $mesa,
+                "comcom_vigencia" => "SI",
+                "comcom_cant_masculino" => $nroHombres,
+                "comcom_cant_femenino" => $nroMujeres,
+                "comcom_cant_nino" => $nroNinios,
+                "comcom_impresion" => 0,
+                "comcom_fact_ant" => NULL,
+                "empr_codigo_factura" => EMPRESA,
+                "comcom_agente" => $agente,
+                "usua_eliminacion" => NULL,
+                "fecha_eliminacion" => NULL,
+                "usua_creacion" => $usua_codigo,
+                "fecha_creacion" => $fecha["fecha"],
+                "usua_modificacion" => NULL,
+                "fecha_modificacion" => NULL,
+                "usua_autoriza_eliminacion" => NULL
 
-        ];
+            ];
 
-        //validamos que este entrando nuevo pedido, de lo contrario no agregamos y nos pasamos a agregar detalle
-        if ($codigo_comanda_existente == '' ||  $codigo_comanda_existente == null) {
-            $insertComanda = comandaModelo::agregar_comanda_modelo($dataComanda);
-        } else {
-            $insertComanda = 2;
-        }
+            //validamos que este entrando nuevo pedido, de lo contrario no agregamos y nos pasamos a agregar detalle
+            if ($codigo_comanda_existente == '' ||  $codigo_comanda_existente == null) {
+                $insertComanda = comandaModelo::agregar_comanda_modelo($dataComanda);
+            } else {
+                $insertComanda = 2;
+            }
 
 
-        if ($insertComanda >= 1 || (isset($codigo_comanda_existente) && $codigo_comanda_existente != '')) {
+            if ($insertComanda >= 1 || (isset($codigo_comanda_existente) && $codigo_comanda_existente != '')) {
 
-            for ($i = 0; $i < $totalInputs; $i++) {
-
-                //arrays
-                $id_producto = json_decode($id_producto);
-                $cantidad = json_decode($cantidad);
-                $observacion = json_decode($observacion);
-                $descpro = json_decode($descpro);
-                $preciopro = json_decode($preciopro);
-                $cortesia = json_decode($cortesia);
-
-                $corte = '';
-                $obs = '';
-                //obtener ultimo codigo de comanda detalle para evitar duplicidad
-                if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
-                    $dataCodigo = ["comcom_codigo" => $codigo_comanda_existente];
-
-                    $ultimoId = comandaModelo::get_nro_item_comanda_detalle($dataCodigo);
-                    $segundoContador = $ultimoId["ultimoId"] + 1;
-                } else {
-
-                    $segundoContador = 1;
-                }
-                $ordenContador = 0;
                 for ($i = 0; $i < $totalInputs; $i++) {
 
-                    $ordenContador++;
-                    $codigoPro = ["prod_codigo" => $id_producto[$i]];
-                    //CODIGO INTERNO DE PRODUCTO get_cod_interno_producto_modelo
-                    $geCodigoPro = comandaModelo::get_cod_interno_producto_modelo($codigoPro);
+                    //arrays
+                    $id_producto = json_decode($id_producto);
+                    $cantidad = json_decode($cantidad);
+                    $observacion = json_decode($observacion);
+                    $descpro = json_decode($descpro);
+                    $preciopro = json_decode($preciopro);
+                    $cortesia = json_decode($cortesia);
 
-                    $cod_int_pro = $geCodigoPro["prod_codigo_interno"];
-
-                    if ($cortesia[$i] == "") {
-                        $corte = "NO";
-                    } elseif ($cortesia[$i] == 1) {
-                        $corte = "SI";
-                    }
-                    if ($observacion[$i] == "") {
-                        $obs = "NO";
-                        $observacion[$i] = NULL;
-                    } else {
-                        $obs = "SI";
-                    }
-                    $id_pro = $id_producto[$i];
-                    //validamos si el codigo es nuevo o existente
-
+                    $corte = '';
+                    $obs = '';
+                    //obtener ultimo codigo de comanda detalle para evitar duplicidad
                     if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
-                        $codigo = $codigo_comanda_existente;
+                        $dataCodigo = ["comcom_codigo" => $codigo_comanda_existente];
+
+                        $ultimoId = comandaModelo::get_nro_item_comanda_detalle($dataCodigo);
+                        $segundoContador = $ultimoId["ultimoId"] + 1;
+                    } else {
+
+                        $segundoContador = 1;
                     }
-                    //quitar coma
-                    $dataComandaDetalle = [
+                    $ordenContador = 0;
+                    for ($i = 0; $i < $totalInputs; $i++) {
 
-                        "comcom_codigo" => $codigo,
-                        "empr_codigo" => EMPRESA,
-                        "cocode_item" => $segundoContador++,
-                        "alma_codigo" => '01',
-                        "prod_codigo" => $id_pro,
-                        "comoca_codigo" => NULL,
-                        "comoca_abreviatura" => NULL,
-                        "cocode_producto" => $descpro[$i],
-                        "cocode_precio_soles" =>  $preciopro[$i],
-                        "cocode_precio_dolares" => NULL,
-                        "cocode_cantidad" => $cantidad[$i],
-                        "cocode_subtotal_soles" =>  $preciopro[$i] * $cantidad[$i],
-                        "cocode_subtotal_dolares" => NULL,
-                        "cocode_cortesia" => $corte,
-                        "cocode_cancelado" => "NO",
-                        "cocode_enviado" => "NO",
-                        "cocode_conpropiedades" => "NO",
-                        "cocode_conobservaciones" => $obs,
-                        "cocode_observaciones" => $observacion[$i],
-                        "cocode_orden" => $ordenContador,
-                        "cocode_grupo" => $ordenContador,
-                        "prpr_codigo" => NULL,
-                        "prpr_descripcion" => NULL,
-                        "cocode_fact_atend" => 0,
-                        "cocode_fact_saldo" => 1,
-                        "cocode_producto_codint" => $cod_int_pro,
-                        "usua_creacion" => $usua_codigo,
-                        "fecha_creacion" => $fecha["fecha"],
-                        "usua_modificacion" => NULL,
-                        "fecha_modificacion" => NULL,
-                        "usua_cancelado" => NULL,
-                        "fecha_cancelado" => NULL,
-                        "cocode_costo_producto" => 0.00,
-                        "cocode_atendido" => NULL,
-                        "cocode_atendido_fechahora" => NULL,
-                        "usua_autoriza_cancelado" => NULL,
-                        "cocode_pedido_hora" => NULL,
+                        $ordenContador++;
+                        $codigoPro = ["prod_codigo" => $id_producto[$i]];
+                        //CODIGO INTERNO DE PRODUCTO get_cod_interno_producto_modelo
+                        $geCodigoPro = comandaModelo::get_cod_interno_producto_modelo($codigoPro);
 
+                        $cod_int_pro = $geCodigoPro["prod_codigo_interno"];
 
-                    ];
-                    $insertComandaDetalle = comandaModelo::agregar_comanda_detalle_modelo($dataComandaDetalle);
-                }
-            }
-            if ($insertComandaDetalle >= 1) {
-                $cod_comanda = '';
-                if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
-                    $cod_comanda = $codigo_comanda_existente;
-                } else {
-                    $cod_comanda = $codigo;
-                }
-                $dataCodigo = [
-                    "comcom_codigo" => $cod_comanda,
-                    "empr_codigo" => EMPRESA
-                ];
-                $listarTicketeras = comandaModelo::get_lista_ticket_modelo($dataCodigo);
-
-                $textoPrint = '';
-                while ($filas = odbc_fetch_array($listarTicketeras)) {
-                    $comare_codigo = $filas["comare_codigo"];
-                    $comare_ticketera = $filas["comare_ticketera"];
-                    $comare_nroimpresion = $filas["comare_nroimpresion"];
-                    $dataComposicion = [
-                        "comcom_codigo" => $cod_comanda,
-                        "comare_codigo" => $comare_codigo,
-                        "empr_codigo" => EMPRESA,
-                        "local_codigo" => LOCAL
-                    ];
-
-                    $DetalleComanda = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
-                    $ticketeras = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
-                    if (odbc_num_rows($DetalleComanda) > 0) {
-
-                        $campos = odbc_fetch_array($DetalleComanda);
-
-
-                        $OpcionPrint = true;
-                        $textoPrintDetalle = '';
-                        while ($filasComposicion = odbc_fetch_array($ticketeras)) {
-                            $enviado = $filasComposicion["cocode_enviado"];
-                            if ($enviado == "NO") {
-
-                                $textoPrintDetalle .= mainModel::moneyFormat($filasComposicion["cocode_cantidad"], "USD")  . " " . $filasComposicion["cocode_producto"];
-                                $textoPrintDetalle .= "<br>";
-                                $dataUpPrint = [
-
-                                    "comcom_codigo" => $cod_comanda,
-                                    "cocode_item" => $filasComposicion["cocode_item"]
-
-                                ];
-                                comandaModelo::actualizar_envio_print_producto_modelo($dataUpPrint);
-                            } elseif ($filasComposicion["cocode_enviado"] == "SI") {
-                            }
+                        if ($cortesia[$i] == "") {
+                            $corte = "NO";
+                        } elseif ($cortesia[$i] == 1) {
+                            $corte = "SI";
                         }
+                        if ($observacion[$i] == "") {
+                            $obs = "NO";
+                            $observacion[$i] = NULL;
+                        } else {
+                            $obs = "SI";
+                        }
+                        $id_pro = $id_producto[$i];
+                        //validamos si el codigo es nuevo o existente
 
-                        $alerta = [
-                            "Alerta" => "simple",
-                            "Titulo" => "Completado",
-                            "Texto" => "Se envio correctamente la comanda.",
-                            "Tipo" => "success"
+                        if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
+                            $codigo = $codigo_comanda_existente;
+                        }
+                        //quitar coma
+                        $dataComandaDetalle = [
+
+                            "comcom_codigo" => $codigo,
+                            "empr_codigo" => EMPRESA,
+                            "cocode_item" => $segundoContador++,
+                            "alma_codigo" => '01',
+                            "prod_codigo" => $id_pro,
+                            "comoca_codigo" => NULL,
+                            "comoca_abreviatura" => NULL,
+                            "cocode_producto" => $descpro[$i],
+                            "cocode_precio_soles" =>  $preciopro[$i],
+                            "cocode_precio_dolares" => NULL,
+                            "cocode_cantidad" => $cantidad[$i],
+                            "cocode_subtotal_soles" =>  $preciopro[$i] * $cantidad[$i],
+                            "cocode_subtotal_dolares" => NULL,
+                            "cocode_cortesia" => $corte,
+                            "cocode_cancelado" => "NO",
+                            "cocode_enviado" => "NO",
+                            "cocode_conpropiedades" => "NO",
+                            "cocode_conobservaciones" => $obs,
+                            "cocode_observaciones" => $observacion[$i],
+                            "cocode_orden" => $ordenContador,
+                            "cocode_grupo" => $ordenContador,
+                            "prpr_codigo" => NULL,
+                            "prpr_descripcion" => NULL,
+                            "cocode_fact_atend" => 0,
+                            "cocode_fact_saldo" => 1,
+                            "cocode_producto_codint" => $cod_int_pro,
+                            "usua_creacion" => $usua_codigo,
+                            "fecha_creacion" => $fecha["fecha"],
+                            "usua_modificacion" => NULL,
+                            "fecha_modificacion" => NULL,
+                            "usua_cancelado" => NULL,
+                            "fecha_cancelado" => NULL,
+                            "cocode_costo_producto" => 0.00,
+                            "cocode_atendido" => "NO",
+                            "cocode_atendido_fechahora" => NULL,
+                            "usua_autoriza_cancelado" => NULL,
+                            "cocode_pedido_hora" => NULL,
+
+
+                        ];
+                        $insertComandaDetalle = comandaModelo::agregar_comanda_detalle_modelo($dataComandaDetalle);
+                    }
+                }
+                if ($insertComandaDetalle >= 1) {
+                    $cod_comanda = '';
+                    if (isset($codigo_comanda_existente) && $codigo_comanda_existente != '') {
+                        $cod_comanda = $codigo_comanda_existente;
+                    } else {
+                        $cod_comanda = $codigo;
+                    }
+                    $dataCodigo = [
+                        "comcom_codigo" => $cod_comanda,
+                        "empr_codigo" => EMPRESA
+                    ];
+                    $listarTicketeras = comandaModelo::get_lista_ticket_modelo($dataCodigo);
+
+                    $textoPrint = '';
+                    while ($filas = odbc_fetch_array($listarTicketeras)) {
+                        $comare_codigo = $filas["comare_codigo"];
+                        $comare_ticketera = $filas["comare_ticketera"];
+                        $comare_nroimpresion = $filas["comare_nroimpresion"];
+                        $dataComposicion = [
+                            "comcom_codigo" => $cod_comanda,
+                            "comare_codigo" => $comare_codigo,
+                            "empr_codigo" => EMPRESA,
+                            "local_codigo" => LOCAL
                         ];
 
+                        $DetalleComanda = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
+                        $ticketeras = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataComposicion);
+                        if (odbc_num_rows($DetalleComanda) > 0) {
 
-                        if ($textoPrintDetalle != '') {
-                            $textoPrint .= "<br>";
-                            $textoPrint .= "--------------------------------------";
-                            $textoPrint .= "<br>";
-                            $textoPrint .= "IMPRE.     : " . $comare_ticketera;
-                            $textoPrint .= "<br>";
-                            $textoPrint .= "MESA     : " . $campos["comcom_mesas"];
-                            $textoPrint .= "<br>";
-                            $textoPrint .= "PEDIDO   : " . $campos["comcom_numero"];
-                            $textoPrint .= "<br>";
-                            $textoPrint .= "ENVÍO    : " . $campos["fecha_modificacion"] . " " . $campos["hora_modificacion"];
-                            $textoPrint .= "<br>";
-                            $textoPrint .= "AGENTE   : " . $campos["comper_apenom"];
-                            $textoPrint .= "<br>";
-                            $textoPrint .= "CLIENTE  : " . $campos["comcom_cliente_apenom"];
-                            $textoPrint .= "<br>";
+                            $campos = odbc_fetch_array($DetalleComanda);
 
 
-                            $textoPrint .= "PRODUCTOS";
-                            $textoPrint .= "<br>";
-                            $textoPrint .= $textoPrintDetalle;
-                            //APLICAR IMPRESION
-                            try {
-                                // Enter the share name for your USB printer here
-                                $connector = new WindowsPrintConnector($comare_ticketera);
+                            $OpcionPrint = true;
+                            $textoPrintDetalle = '';
+                            while ($filasComposicion = odbc_fetch_array($ticketeras)) {
+                                $enviado = $filasComposicion["cocode_enviado"];
+                                if ($enviado == "NO") {
 
-                                /* Print a "Hello world" receipt" */
-                                $printer = new Printer($connector);
-                                $printer->text($textoPrint);
-                                $printer->cut();
+                                    $textoPrintDetalle .= mainModel::moneyFormat($filasComposicion["cocode_cantidad"], "USD")  . " " . $filasComposicion["cocode_producto"];
+                                    $textoPrintDetalle .= "<br>";
+                                    $dataUpPrint = [
 
-                                /* Close printer */
-                                $printer->close();
-                            } catch (Exception $e) {
-                                echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+                                        "comcom_codigo" => $cod_comanda,
+                                        "cocode_item" => $filasComposicion["cocode_item"]
+
+                                    ];
+                                    comandaModelo::actualizar_envio_print_producto_modelo($dataUpPrint);
+                                } elseif ($filasComposicion["cocode_enviado"] == "SI") {
+                                }
                             }
 
 
-                            //FIN DE IMPRESION
-                        } else {
+
+                            if ($textoPrintDetalle != '') {
+                                $textoPrint .= "<br>";
+                                $textoPrint .= "--------------------------------------";
+                                $textoPrint .= "<br>";
+                                $textoPrint .= "IMPRE.     : " . $comare_ticketera;
+                                $textoPrint .= "<br>";
+                                $textoPrint .= "MESA     : " . $campos["comcom_mesas"];
+                                $textoPrint .= "<br>";
+                                $textoPrint .= "PEDIDO   : " . $campos["comcom_numero"];
+                                $textoPrint .= "<br>";
+                                $textoPrint .= "ENVÍO    : " . $campos["fecha_modificacion"] . " " . $campos["hora_modificacion"];
+                                $textoPrint .= "<br>";
+                                $textoPrint .= "AGENTE   : " . $campos["comper_apenom"];
+                                $textoPrint .= "<br>";
+                                $textoPrint .= "CLIENTE  : " . $campos["comcom_cliente_apenom"];
+                                $textoPrint .= "<br>";
+
+
+                                $textoPrint .= "PRODUCTOS";
+                                $textoPrint .= "<br>";
+                                $textoPrint .= $textoPrintDetalle;
+                                //APLICAR IMPRESION
+                                try {
+                                    // Enter the share name for your USB printer here
+                                    $connector = new WindowsPrintConnector($comare_ticketera);
+
+                                    /* Print a "Hello world" receipt" */
+                                    $printer = new Printer($connector);
+                                    $printer->text($textoPrint);
+                                    $printer->cut();
+
+                                    /* Close printer */
+                                    $printer->close();
+                                } catch (Exception $e) {
+
+                                    echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+                                }
+
+
+                                //FIN DE IMPRESION
+                            } else {
+                            }
                         }
+
+
+                        $alerta = [
+                            "Alerta" => "pagina",
+                            "Titulo" => "Completado",
+                            "Texto" => "Se envió correctamente la comanda.",
+                            "Tipo" => "success",
+                            "Contenido" => "home",
+
+                        ];
                     }
-                }
-                /* $alerta = [
+                    /* $alerta = [
 
                         "Alerta" => "pagina",
                         "Titulo" => "Completado",
@@ -422,23 +418,24 @@ class comandaControlador extends comandaModelo
                         "Tipo" => "success",
                         "Contenido" => "home"
                     ]; */
+                } else {
+                    $alerta = [
+                        "Alerta" => "simple",
+                        "Titulo" => "Algo salió mal",
+                        "Texto" => "No se pudo registrar el detalle de la comanda. ¡Ups!",
+                        "Tipo" => "error"
+                    ];
+                }
             } else {
                 $alerta = [
                     "Alerta" => "simple",
                     "Titulo" => "Algo salió mal",
-                    "Texto" => "No se pudo registrar el detalle de la comanda. ¡Ups!",
+                    "Texto" => "No se pudo registrar comanda. ¡Ups!",
                     "Tipo" => "error"
                 ];
             }
-        } else {
-            $alerta = [
-                "Alerta" => "simple",
-                "Titulo" => "Algo salió mal",
-                "Texto" => "No se pudo registrar comanda. ¡Ups!",
-                "Tipo" => "error"
-            ];
+            echo $textoPrint;
         }
-        echo $textoPrint;
         return mainModel::sweet_alert($alerta);
     }
 
@@ -446,6 +443,11 @@ class comandaControlador extends comandaModelo
     {
         $data = ["comcom_codigo" => $codigo_comanda];
         return comandaModelo::data_comanda_modelo($data);
+    }
+    public function data_comanda_detalle_controlador($codigo_comanda)
+    {
+        $data = ["comcom_codigo" => $codigo_comanda];
+        return comandaModelo::data_comanda_detalle_modelo($data);
     }
 
     public function get_piso_mesa_controlador($codigo_mesa)
@@ -491,29 +493,54 @@ class comandaControlador extends comandaModelo
 
     public function delete_comanda_deltalle_controlador()
     {
+        $dataVer = [
 
-        $data = [
             "comcom_codigo" => $_POST["comcom_codigo"],
             "cocode_item" => $_POST["cocode_item"]
         ];
-        $guardar = comandaModelo::delete_comanda_detalle_modelo($data);
-        if ($guardar >= 1) {
-            $alerta = [
-                "Alerta" => "recargar",
-                "Titulo" => "Completado",
-                "Texto" => "Se retiró producto correctamente",
-                "Tipo" => "success"
-            ];
-        } else {
-            $alerta = [
-                "Alerta" => "simple",
-                "Titulo" => "Algo salió mal",
-                "Texto" => "No se agregar cortesía",
-                "Tipo" => "error"
-            ];
-        }
+        $verAtencion = comandaModelo::verificar_atencion_comanda_detalle_modelo($dataVer);
+        if ($verAtencion["cocode_atendido"] == "NO") {
 
-        return mainModel::sweet_alert($alerta);
+            $data = [
+                "comcom_codigo" => $_POST["comcom_codigo"],
+                "cocode_item" => $_POST["cocode_item"]
+            ];
+            $guardar = comandaModelo::quitar_comanda_detalle_modelo($data);
+            if ($guardar >= 1) {
+                $alerta = [
+                    "Alerta" => "recargar",
+                    "Titulo" => "Completado",
+                    "Texto" => "Se retiró producto correctamente",
+                    "Tipo" => "success"
+                ];
+            } else {
+                $alerta = [
+                    "Alerta" => "simple",
+                    "Titulo" => "Algo salió mal",
+                    "Texto" => "No se agregar cortesía",
+                    "Tipo" => "error"
+                ];
+            }
+            return mainModel::sweet_alert($alerta);
+        } elseif($verAtencion["cocode_atendido"] == "SI") {
+
+            echo "<script>
+                        swal({
+                            title: 'Producto atendido',
+                            text: 'Se eliminó producto atendido',
+                            type: 'warning',  
+                            confirmButtonText: 'Aceptar',
+                        }).then(function () {
+                            location.reload();
+                        });;
+                    </script>";
+            $data = [
+                "usua_codigo" => $_POST["usua_codigo"],
+                "comcom_codigo" => $_POST["comcom_codigo"],
+                "cocode_item" => $_POST["cocode_item"]
+            ];
+            $guardar = comandaModelo::delete_comanda_detalle_modelo($data);
+        }
     }
 
 
@@ -606,5 +633,86 @@ class comandaControlador extends comandaModelo
         }
 
         return mainModel::sweet_alert($alerta);
+    }
+
+    public function precuenta_comanda_controlador()
+    {
+
+        $comcom_codigo = mainModel::limpiar_cadena($_POST['comcom_codigo_precuenta']);
+        $data = [
+            "comcom_codigo" => $comcom_codigo,
+            "empr_codigo" => EMPRESA,
+            "local_codigo" => LOCAL
+        ];
+        $printText = '';
+        $consulta = comandaModelo::get_precuenta_modelo($data);
+        $consultaDetalle = comandaModelo::get_precuenta_modelo($data);
+        $data = odbc_fetch_array($consulta);
+        $printText .= $data["empr_razonsocial"];
+        $printText .= "<br>";
+        $printText .= "R.U.C.: " . $data["empr_ruc"];
+        $printText .= "<br>";
+        $printText .= $data["locale_descripcion"];
+        $printText .= "<br>";
+        $printText .= $data["locale_direccion"];
+        $printText .= "<br>";
+        $printText .= "<strong>PRECUENTA</strong>";
+        $printText .= "<br>";
+        $printText .= "Pedido: " . $data["comcom_numero"];
+        $printText .= "<br>";
+        $printText .= "Fecha: " . $data["comcom_fecha"];
+        $printText .= "<br>";
+        $printText .= "Mozo: " . $data["comper_apenom"];
+        $printText .= "<br>";
+        $printText .= "Mesa: " . $data["mesa"];
+        $printText .= "<br>";
+        $printText .= "Moneda: " . $data["moneda"];
+        $printText .= "<br>";
+        $printText .= "--------------------------------------";
+        $printText .= "<br>";
+        $printText .= "<strong>Cantidad       Producto          Subtotal</strong>";
+        $printText .= "<br>";
+
+        $total = 0;
+        while ($dataDetalle = odbc_fetch_array($consultaDetalle)) {
+            $printText .= round($dataDetalle["cantidad"]) . "    " . $dataDetalle["cocode_producto"] . " S/" . mainModel::moneyFormat($dataDetalle["precio"], "USD");
+            $total = $total + ($dataDetalle["cantidad"] * $dataDetalle["precio"]);
+            $printText .= "<br>";
+        }
+        $printText .= "<br>";
+
+        $textoFinal = $printText;
+        $textoFinal .= 'Tipo de comprobante';
+        try {
+            // Enter the share name for your USB printer here
+            $connector = new WindowsPrintConnector("POS80-C");
+
+            /* Print a "Hello world" receipt" */
+            $printer = new Printer($connector);
+            $printer->text($printText);
+            $printer->cut();
+
+            /* Close printer */
+            $printer->close();
+        } catch (Exception $e) {
+
+            echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+        }
+
+
+
+
+        $actualizar = "
+        <script>
+            swal({
+                title: 'Precuenta Finalizada',   
+                text: '" . $printText . "',   
+                type: 'success',   
+                confirmButtonText: 'Aceptar',
+            }).then(function(){
+                window.location='" . SERVERURL . "home';
+            });
+        </script>";
+        return $actualizar;
     }
 }
