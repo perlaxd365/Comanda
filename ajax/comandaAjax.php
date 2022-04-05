@@ -50,6 +50,24 @@ if(isset($_POST['producto'])) {
 	echo $instancearComanda->precuenta_comanda_controlador();
 
 
+}elseif(isset($_POST['comcom_codigo_eliminar_comanda'])) {
+	
+
+	echo $instancearComanda->eliminar_comanda_controlador();
+
+
+}elseif(isset($_POST['eliminar_atendido'])) {
+	
+
+	echo $instancearComanda->eliminar_detalle_admin_controlador();
+
+
+}elseif(isset($_POST['clave_verficar'])) {
+	
+
+	echo $instancearComanda->validar_admin_controlador();
+
+
 }else{
 
 	echo '<script> window.location.href="'.SERVERURL.'login/"</script>';

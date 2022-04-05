@@ -76,6 +76,19 @@ class comandaControlador extends comandaModelo
             ];
         } else {
 
+            //come_parametro
+            $dataEmpr = [
+                "empr_codigo" => EMPRESA
+            ];
+            $empr = comandaModelo::come_parametro_modelo($dataEmpr);
+            if ($empr["come_valor"] == "SI") {
+                $atendido = "SI";
+            } elseif ($empr["come_valor"] == "NO") {
+
+                $atendido = "NO";
+            }
+
+
             //Get correlativo
             $ls_numero = '';
             //get año
@@ -293,7 +306,7 @@ class comandaControlador extends comandaModelo
                             "usua_cancelado" => NULL,
                             "fecha_cancelado" => NULL,
                             "cocode_costo_producto" => 0.00,
-                            "cocode_atendido" => "NO",
+                            "cocode_atendido" => $atendido,
                             "cocode_atendido_fechahora" => NULL,
                             "usua_autoriza_cancelado" => NULL,
                             "cocode_pedido_hora" => NULL,
@@ -475,7 +488,7 @@ class comandaControlador extends comandaModelo
             $alerta = [
                 "Alerta" => "recargar",
                 "Titulo" => "Completado",
-                "Texto" => "Se añadió cortesía correctamente",
+                "Texto" => "Se actualizó la cortesía correctamente",
                 "Tipo" => "success"
             ];
         } else {
@@ -493,13 +506,14 @@ class comandaControlador extends comandaModelo
 
     public function delete_comanda_deltalle_controlador()
     {
+
         $dataVer = [
 
             "comcom_codigo" => $_POST["comcom_codigo"],
             "cocode_item" => $_POST["cocode_item"]
         ];
         $verAtencion = comandaModelo::verificar_atencion_comanda_detalle_modelo($dataVer);
-        if ($verAtencion["cocode_atendido"] == "NO") {
+        if ($verAtencion["cocode_atendido"] == "NO" && $verAtencion["cocode_enviado"] == "NO") {
 
             $data = [
                 "comcom_codigo" => $_POST["comcom_codigo"],
@@ -510,42 +524,95 @@ class comandaControlador extends comandaModelo
                 $alerta = [
                     "Alerta" => "recargar",
                     "Titulo" => "Completado",
-                    "Texto" => "Se retiró producto correctamente",
+                    "Texto" => "Se retiró producto correctamente, aún no fué atendido.",
                     "Tipo" => "success"
                 ];
             } else {
                 $alerta = [
                     "Alerta" => "simple",
                     "Titulo" => "Algo salió mal",
-                    "Texto" => "No se agregar cortesía",
+                    "Texto" => "No se pudo retirar producto",
                     "Tipo" => "error"
                 ];
             }
             return mainModel::sweet_alert($alerta);
-        } elseif($verAtencion["cocode_atendido"] == "SI") {
+        } elseif ($verAtencion["cocode_enviado"] == "SI" && $verAtencion["cocode_atendido"] == "NO") {
+            //Nombre de producto
+            $nombrePro = comandaModelo::nombre_comanda_detalle_modelo($dataVer);
+            $printText = 'CANCELACION DE PRODUCTO';
+            $printText .= '----------------------------';
+            $printText .= $nombrePro["cocode_producto"];
 
-            echo "<script>
-                        swal({
-                            title: 'Producto atendido',
-                            text: 'Se eliminó producto atendido',
-                            type: 'warning',  
-                            confirmButtonText: 'Aceptar',
-                        }).then(function () {
-                            location.reload();
-                        });;
-                    </script>";
+
+            //recuperar ticketera con codigo de comanda
+            $dataCodigo = [
+                "comcom_codigo" => $_POST["comcom_codigo"],
+                "empr_codigo" => EMPRESA
+            ];
+            $listarTicketeras = comandaModelo::get_lista_ticket_modelo($dataCodigo);
+
+            while ($filas = odbc_fetch_array($listarTicketeras)) {
+                $comare_codigo = $filas["comare_codigo"];
+                $comare_ticketera = $filas["comare_ticketera"];
+                $dataTicketera = [
+                    "comcom_codigo" => $_POST["comcom_codigo"],
+                    "comare_codigo" => $comare_codigo,
+                    "empr_codigo" => EMPRESA,
+                    "local_codigo" => LOCAL
+                ];
+
+                $DetalleComanda = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataTicketera);
+                while ($items = odbc_fetch_array($DetalleComanda)) {
+
+                    if ($items["cocode_item"] == $_POST["cocode_item"]) {
+
+                        try {
+                            // Enter the share name for your USB printer here
+                            $connector = new WindowsPrintConnector($filas["comare_ticketera"]);
+
+                            /* Print a "Hello world" receipt" */
+                            $printer = new Printer($connector);
+                            $printer->text($printText);
+                            $printer->cut();
+
+                            /* Close printer */
+                            $printer->close();
+                        } catch (Exception $e) {
+
+                            echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+                        }
+                    }
+                }
+            }
+
+
             $data = [
                 "usua_codigo" => $_POST["usua_codigo"],
                 "comcom_codigo" => $_POST["comcom_codigo"],
                 "cocode_item" => $_POST["cocode_item"]
             ];
             $guardar = comandaModelo::delete_comanda_detalle_modelo($data);
+            if ($guardar >= 1) {
+                echo "<script>
+                swal({
+                    title: 'Producto Cancelado',
+                    text: 'Se canceló correctamente.',
+                    type: 'success',  
+                    confirmButtonText: 'Aceptar',
+                }).then(function () {
+                    location.reload();
+                });;
+            </script>";
+            }
+        } else {
+            echo 'error desconocido';
         }
     }
 
 
     public static function recuperar_observacion_controlador()
     {
+
         $comcom_codigo = mainModel::limpiar_cadena($_POST['comandaObser']);
         $cocode_item = mainModel::limpiar_cadena($_POST['item']);
         $dataObs = [
@@ -608,29 +675,45 @@ class comandaControlador extends comandaModelo
 
     public function actualizar_cantidad_detalle_controlador()
     {
-
-        $data = [
+        $dataVerificar = [
             "comcom_codigo" => $_POST["comcom_codigo"],
-            "cocode_item" => $_POST["cocode_item"],
-            "cocode_cantidad" => $_POST["cantidad_productos"]
+            "cocode_item" => $_POST["cocode_item"]
 
         ];
-        $guardar = comandaModelo::actualizar_cantidad_producto_modelo($data);
-        if ($guardar >= 1) {
-            $alerta = [
-                "Alerta" => "recargar",
-                "Titulo" => "Completado",
-                "Texto" => "Se actualizó la cantidad correctamente",
-                "Tipo" => "success"
-            ];
-        } else {
+        $verificarAten = comandaModelo::verificar_atencion_comanda_detalle_modelo($dataVerificar);
+        if ($verificarAten["cocode_atendido"] == "SI") {
             $alerta = [
                 "Alerta" => "simple",
-                "Titulo" => "Algo salió mal",
-                "Texto" => "No se actualizó la cantidad",
+                "Titulo" => "Producto atendido",
+                "Texto" => "No se actualizó la cantidad por que el producto ya se encuentra atendido",
                 "Tipo" => "error"
             ];
+        } else {
+
+            $data = [
+                "comcom_codigo" => $_POST["comcom_codigo"],
+                "cocode_item" => $_POST["cocode_item"],
+                "cocode_cantidad" => $_POST["cantidad_productos"]
+
+            ];
+            $guardar = comandaModelo::actualizar_cantidad_producto_modelo($data);
+            if ($guardar >= 1) {
+                $alerta = [
+                    "Alerta" => "recargar",
+                    "Titulo" => "Completado",
+                    "Texto" => "Se actualizó la cantidad correctamente",
+                    "Tipo" => "success"
+                ];
+            } else {
+                $alerta = [
+                    "Alerta" => "simple",
+                    "Titulo" => "Algo salió mal",
+                    "Texto" => "No se actualizó la cantidad",
+                    "Tipo" => "error"
+                ];
+            }
         }
+
 
         return mainModel::sweet_alert($alerta);
     }
@@ -639,80 +722,378 @@ class comandaControlador extends comandaModelo
     {
 
         $comcom_codigo = mainModel::limpiar_cadena($_POST['comcom_codigo_precuenta']);
+        $array = [
+            "comcom_codigo" => $comcom_codigo
+        ];
+        $verifAtendido = comandaModelo::verificar_producto_atendido_modelo($array);
+        if ($verifAtendido > 0) {
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Algo salió mal",
+                "Texto" => "Se encontró productos en espera, por favor verificar que se encuentren todos atendidos, Gracias.",
+                "Tipo" => "error"
+            ];
+            return mainModel::sweet_alert($alerta);
+        } else {
+
+
+            $data = [
+                "comcom_codigo" => $comcom_codigo,
+                "empr_codigo" => EMPRESA,
+                "local_codigo" => LOCAL
+            ];
+            $printText = '';
+            $consulta = comandaModelo::get_precuenta_modelo($data);
+            $consultaDetalle = comandaModelo::get_precuenta_modelo($data);
+            $data = odbc_fetch_array($consulta);
+            $printText .= $data["empr_razonsocial"];
+            $printText .= "<br>";
+            $printText .= "R.U.C.: " . $data["empr_ruc"];
+            $printText .= "<br>";
+            $printText .= $data["locale_descripcion"];
+            $printText .= "<br>";
+            $printText .= $data["locale_direccion"];
+            $printText .= "<br>";
+            $printText .= "<strong>PRECUENTA</strong>";
+            $printText .= "<br>";
+            $printText .= "Pedido: " . $data["comcom_numero"];
+            $printText .= "<br>";
+            $printText .= "Fecha: " . $data["comcom_fecha"];
+            $printText .= "<br>";
+            $printText .= "Mozo: " . $data["comper_apenom"];
+            $printText .= "<br>";
+            $printText .= "Mesa: " . $data["mesa"];
+            $printText .= "<br>";
+            $printText .= "Moneda: " . $data["moneda"];
+            $printText .= "<br>";
+            $printText .= "--------------------------------------";
+            $printText .= "<br>";
+            $printText .= "<strong>Cantidad       Producto          Subtotal</strong>";
+            $printText .= "<br>";
+
+            $total = 0;
+            while ($dataDetalle = odbc_fetch_array($consultaDetalle)) {
+                $printText .= round($dataDetalle["cantidad"]) . "    " . $dataDetalle["cocode_producto"] . " S/" . mainModel::moneyFormat($dataDetalle["precio"], "USD");
+                $total = $total + ($dataDetalle["cantidad"] * $dataDetalle["precio"]);
+                $printText .= "<br>";
+            }
+            $printText .= "<br>";
+
+            $textoFinal = $printText;
+            $textoFinal .= 'Tipo de comprobante';
+            try {
+                // Enter the share name for your USB printer here
+                $connector = new WindowsPrintConnector("POS80-C");
+
+                /* Print a "Hello world" receipt" */
+                $printer = new Printer($connector);
+                $printer->text($printText);
+                $printer->cut();
+
+                /* Close printer */
+                $printer->close();
+            } catch (Exception $e) {
+
+                echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+            }
+
+            $dataEstado = [
+                "comcom_estado" => "04",
+                "comcom_codigo" => $comcom_codigo
+            ];
+
+
+            $estadoUP = comandaModelo::update_estado_comanda_modelo($dataEstado);
+            if ($estadoUP >= 1) {
+                $actualizar = "
+                <script>
+                    swal({
+                        title: 'Precuenta Finalizada',   
+                        text: '" . $printText . "',   
+                        type: 'success',   
+                        confirmButtonText: 'Aceptar',
+                    }).then(function(){
+                        window.location='" . SERVERURL . "home';
+                    });
+                </script>";
+                return $actualizar;
+            } else {
+                $alerta = [
+                    "Alerta" => "simple",
+                    "Titulo" => "Algo salió mal",
+                    "Texto" => "No se pudo realizar precuenta.",
+                    "Tipo" => "error"
+                ];
+
+                return mainModel::sweet_alert($alerta);
+            }
+        }
+    }
+
+
+
+    //ELIMINAR COMANDA COMPLETA
+    public function eliminar_comanda_controlador()
+    {
+        $textoPrint = 'SE CANCELÓ LA COMANDA CORRECTAMENTE';
+        $comcom_codigo = mainModel::limpiar_cadena($_POST['comcom_codigo_eliminar_comanda']);
+        $usua_codigo = mainModel::limpiar_cadena($_POST['usua_codigo_eliminar_comanda']);
+        $admin_codigo = mainModel::limpiar_cadena($_POST['admin_codigo_eliminar']);
+
+
         $data = [
             "comcom_codigo" => $comcom_codigo,
-            "empr_codigo" => EMPRESA,
-            "local_codigo" => LOCAL
+            "usua_codigo" => $usua_codigo,
+
         ];
-        $printText = '';
-        $consulta = comandaModelo::get_precuenta_modelo($data);
-        $consultaDetalle = comandaModelo::get_precuenta_modelo($data);
-        $data = odbc_fetch_array($consulta);
-        $printText .= $data["empr_razonsocial"];
-        $printText .= "<br>";
-        $printText .= "R.U.C.: " . $data["empr_ruc"];
-        $printText .= "<br>";
-        $printText .= $data["locale_descripcion"];
-        $printText .= "<br>";
-        $printText .= $data["locale_direccion"];
-        $printText .= "<br>";
-        $printText .= "<strong>PRECUENTA</strong>";
-        $printText .= "<br>";
-        $printText .= "Pedido: " . $data["comcom_numero"];
-        $printText .= "<br>";
-        $printText .= "Fecha: " . $data["comcom_fecha"];
-        $printText .= "<br>";
-        $printText .= "Mozo: " . $data["comper_apenom"];
-        $printText .= "<br>";
-        $printText .= "Mesa: " . $data["mesa"];
-        $printText .= "<br>";
-        $printText .= "Moneda: " . $data["moneda"];
-        $printText .= "<br>";
-        $printText .= "--------------------------------------";
-        $printText .= "<br>";
-        $printText .= "<strong>Cantidad       Producto          Subtotal</strong>";
-        $printText .= "<br>";
+        $eliminar = comandaModelo::detalle_comanda_id_modelo($data);
+        while ($row = odbc_fetch_array($eliminar)) {
+            if ($row["cocode_enviado"] == "NO" &&  $row["cocode_atendido"] == "NO") {
+                $dataDel = [
+                    "comcom_codigo" => $comcom_codigo,
+                    "cocode_item" => $row["cocode_item"]
 
-        $total = 0;
-        while ($dataDetalle = odbc_fetch_array($consultaDetalle)) {
-            $printText .= round($dataDetalle["cantidad"]) . "    " . $dataDetalle["cocode_producto"] . " S/" . mainModel::moneyFormat($dataDetalle["precio"], "USD");
-            $total = $total + ($dataDetalle["cantidad"] * $dataDetalle["precio"]);
-            $printText .= "<br>";
+                ];
+                comandaModelo::quitar_comanda_detalle_modelo($dataDel);
+            } elseif ($row["cocode_enviado"] == "SI" &&  $row["cocode_atendido"] == "NO") {
+
+
+
+                //recuperar ticketera con codigo de comanda
+                $dataCodigo = [
+                    "comcom_codigo" => $comcom_codigo,
+                    "empr_codigo" => EMPRESA
+                ];
+                $listarTicketeras = comandaModelo::get_lista_ticket_modelo($dataCodigo);
+
+                $printText = 'CANCELACION DE PRODUCTO';
+                $printText .= $row["cocode_producto"];
+                $printText = '--------------------------';
+
+                $printText = '<br>';
+                while ($filas = odbc_fetch_array($listarTicketeras)) {
+                    $comare_codigo = $filas["comare_codigo"];
+                    $comare_ticketera = $filas["comare_ticketera"];
+                    $dataTicketera = [
+                        "comcom_codigo" => $comcom_codigo,
+                        "comare_codigo" => $comare_codigo,
+                        "empr_codigo" => EMPRESA,
+                        "local_codigo" => LOCAL
+                    ];
+
+
+                    $DetalleComanda = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataTicketera);
+                    while ($items = odbc_fetch_array($DetalleComanda)) {
+
+                        if ($items["cocode_item"] == $row["cocode_item"]) {
+
+                            try {
+                                // Enter the share name for your USB printer here
+                                $connector = new WindowsPrintConnector($filas["comare_ticketera"]);
+
+                                /* Print a "Hello world" receipt" */
+                                $printer = new Printer($connector);
+                                $printer->text($printText);
+                                $printer->cut();
+
+                                /* Close printer */
+                                $printer->close();
+                            } catch (Exception $e) {
+
+                                echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+                            }
+                        }
+                    }
+                }
+
+                $data = [
+                    "usua_codigo" => $usua_codigo,
+                    "comcom_codigo" => $comcom_codigo,
+                    "cocode_item" => $row["cocode_item"]
+                ];
+                comandaModelo::delete_comanda_detalle_modelo($data);
+            } elseif ($row["cocode_enviado"] == "SI" &&  $row["cocode_atendido"] == "SI") {
+
+                
+                //recuperar ticketera con codigo de comanda
+                $dataCodigo = [
+                    "comcom_codigo" => $comcom_codigo,
+                    "empr_codigo" => EMPRESA
+                ];
+                $listarTicketeras = comandaModelo::get_lista_ticket_modelo($dataCodigo);
+
+                $printText = 'CANCELACION DE PRODUCTO';
+                $printText .= $row["cocode_producto"];
+                $printText = '--------------------------';
+
+                $printText = '<br>';
+                while ($filas = odbc_fetch_array($listarTicketeras)) {
+                    $comare_codigo = $filas["comare_codigo"];
+                    $comare_ticketera = $filas["comare_ticketera"];
+                    $dataTicketera = [
+                        "comcom_codigo" => $comcom_codigo,
+                        "comare_codigo" => $comare_codigo,
+                        "empr_codigo" => EMPRESA,
+                        "local_codigo" => LOCAL
+                    ];
+
+
+                    $DetalleComanda = comandaModelo::get_lista_composicion_comanda_imprimir_modelo($dataTicketera);
+                    while ($items = odbc_fetch_array($DetalleComanda)) {
+
+                        if ($items["cocode_item"] == $row["cocode_item"]) {
+
+                            try {
+                                // Enter the share name for your USB printer here
+                                $connector = new WindowsPrintConnector($filas["comare_ticketera"]);
+
+                                /* Print a "Hello world" receipt" */
+                                $printer = new Printer($connector);
+                                $printer->text($printText);
+                                $printer->cut();
+
+                                /* Close printer */
+                                $printer->close();
+                            } catch (Exception $e) {
+
+                                echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+                            }
+                        }
+                    }
+                }
+
+                $data = [
+                    "usua_codigo" => $usua_codigo,
+                    "comcom_codigo" => $comcom_codigo,
+                    "cocode_item" => $row["cocode_item"],
+                    "usua_autoriza_cancelado" => $admin_codigo
+                ];
+                comandaModelo::delete_comanda_detalle_autorizacion_modelo($data);
+            }
         }
-        $printText .= "<br>";
 
-        $textoFinal = $printText;
-        $textoFinal .= 'Tipo de comprobante';
-        try {
-            // Enter the share name for your USB printer here
-            $connector = new WindowsPrintConnector("POS80-C");
 
-            /* Print a "Hello world" receipt" */
-            $printer = new Printer($connector);
-            $printer->text($printText);
-            $printer->cut();
+        $dataEstado = [
+            "comcom_estado" => "07",
+            "comcom_codigo" => $comcom_codigo
+        ];
 
-            /* Close printer */
-            $printer->close();
-        } catch (Exception $e) {
 
-            echo "Couldn't print to this printer: " . $e->getMessage() . "\n";
+        $estadoUP = comandaModelo::update_estado_comanda_modelo($dataEstado);
+        if ($estadoUP > 0) {
+            echo "<script>
+                        swal({
+                            title: 'Comanda cancelada',
+                            text: '" . $textoPrint . "',
+                            type: 'success',  
+                            confirmButtonText: 'Aceptar',
+                        }).then(function () {
+                            window.location.href = '" . SERVERURL . "home';
+                        });;
+                    </script>";
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function eliminar_detalle_admin_controlador()
+    {
+        $usua_codigo = mainModel::limpiar_cadena($_POST['usua_codigo_atendido']);
+        $comcom_codigo = mainModel::limpiar_cadena($_POST['comcom_codigo_atendido']);
+        $cocode_item = mainModel::limpiar_cadena($_POST['cocode_item_atendido']);
+
+        $clave = mainModel::encriptar_power_builder($_POST["clave"]);
+        $claveEncriptada = [
+
+            "clave" => $clave
+        ];
+        $numFilas = comandaModelo::validar_admin_modelo($claveEncriptada);
+        $Array = comandaModelo::validar_admin_modelo($claveEncriptada);
+        if (odbc_num_rows($numFilas) >= 1) {
+            $datosAdmin = odbc_fetch_array($Array);
+
+            $data = [
+                "usua_codigo" => $usua_codigo,
+                "comcom_codigo" => $comcom_codigo,
+                "cocode_item" => $cocode_item,
+                "usua_autoriza_cancelado" => $datosAdmin["comper_codigo"]
+            ];
+            $guardar = comandaModelo::delete_comanda_detalle_autorizacion_modelo($data);
+            if ($guardar >= 1) {
+                echo "<script>
+                swal({
+                    title: 'Producto Cancelado',
+                    text: 'Se canceló correctamente.',
+                    type: 'success',  
+                    confirmButtonText: 'Aceptar',
+                }).then(function () {
+                });
+            </script>";
+            }
+            $alerta = [
+                "Alerta" => "recargar",
+                "Titulo" => "Completado",
+                "Texto" => "Se canceló pedido atendido correctamente.",
+                "Tipo" => "success"
+            ];
+        } else {
+            $alerta = [
+                "Alerta" => "simple",
+                "Titulo" => "Algo salió mal",
+                "Texto" => "El usuario ingresado no tiene permiso para realizar esta acción",
+                "Tipo" => "error"
+            ];
         }
 
+        return mainModel::sweet_alert($alerta);
+    }
 
+    public function validar_admin_controlador()
+    {
+        $clave = mainModel::encriptar_power_builder($_POST["clave_verficar"]);
+        $claveEncriptada = [
 
+            "clave" => $clave
 
-        $actualizar = "
-        <script>
-            swal({
-                title: 'Precuenta Finalizada',   
-                text: '" . $printText . "',   
-                type: 'success',   
-                confirmButtonText: 'Aceptar',
-            }).then(function(){
-                window.location='" . SERVERURL . "home';
-            });
-        </script>";
-        return $actualizar;
+        ];
+        $numFilas = comandaModelo::validar_admin_modelo($claveEncriptada);
+        $Array = comandaModelo::validar_admin_modelo($claveEncriptada);
+        if (odbc_num_rows($numFilas) >= 1) {
+            $datosAdmin = odbc_fetch_array($Array);
+            return $datosAdmin["comper_codigo"];
+        } else {
+            return 'error';
+        }
     }
 }

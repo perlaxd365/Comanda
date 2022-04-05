@@ -25,6 +25,9 @@ $(document).ready(function(){
         }else if(tipo==="delete"){
             textoAlerta="Se eliminará el producto";
 
+        }else if(tipo==="deleteComanda"){
+            textoAlerta="Se cancelará todo el pedido";
+
         }else if(tipo==="update"){
                textoAlerta="Los datos del sistema serán actualizados";
            }else if(tipo==="login"){

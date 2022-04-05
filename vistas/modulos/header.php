@@ -9,7 +9,8 @@
 	<title>Comanda Web</title>
 
 	<!-- favicon -->
-    <link rel="icon" href="<?php echo SERVERURL ?>vistas/images/gallo.png" sizes="16x16" type="image/png">
+    <link rel="icon" href="<?php echo SERVERURL?>vistas/images/logogaucho.png" type="image/x-icon">
+   
 	<!-- google font -->
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Poppins:400,700&display=swap" rel="stylesheet">

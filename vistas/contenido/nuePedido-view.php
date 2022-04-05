@@ -6,7 +6,7 @@
 		height: 150px;
 	}
 </style>
-<div class="latest-news mt-150 mb-150">
+<div class="latest-news mt-80 mb-150">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-12 col-md-6">

@@ -316,12 +316,81 @@ class comandaModelo extends mainModel
     protected function verificar_atencion_comanda_detalle_modelo($datos)
     {
 
-        $consulta = odbc_prepare(mainModel::conectar(), "SELECT cocode_atendido FROM comand_comandadetalle WHERE comcom_codigo=? AND cocode_item=?; ");
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT cocode_atendido,cocode_enviado FROM comand_comandadetalle WHERE comcom_codigo=? AND cocode_item=?; ");
         $sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["cocode_item"]));
 		$sql = odbc_fetch_array($consulta);
         
         return $sql;
     }
+	
+    protected function update_estado_comanda_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comanda SET comcom_estado=?  WHERE comcom_codigo=?;");
+        $sql = odbc_execute($consulta, array($datos["comcom_estado"],$datos["comcom_codigo"]));
+		$sql = odbc_num_rows($consulta);
+        
+        return $sql;
+    }
+	
+    protected function verificar_producto_atendido_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT cocode_atendido FROM comand_comandadetalle WHERE comcom_codigo=? AND cocode_atendido='NO';");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"]));
+		$sql = odbc_num_rows($consulta);
+        
+        return $sql;
+    }
+
+    protected function come_parametro_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT come_valor FROM come_parametro WHERE empr_codigo=? AND come_codigo = 'AUTOATENC';");
+        $sql = odbc_execute($consulta, array($datos["empr_codigo"]));
+        $sql = odbc_fetch_array($consulta);
+
+        return $sql;
+    }
+
+    protected function detalle_comanda_id_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "SELECT cocode_item,cocode_atendido,cocode_enviado,cocode_cancelado,cocode_producto FROM comand_comandadetalle  WHERE comcom_codigo=?");
+        $sql = odbc_execute($consulta, array($datos["comcom_codigo"]));
+        
+        return $consulta;
+    }
+	protected function nombre_comanda_detalle_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT cocode_producto FROM  comand_comandadetalle  WHERE comcom_codigo=? AND  cocode_item=?;");
+		$sql = odbc_execute($consulta, array($datos["comcom_codigo"],$datos["cocode_item"]));
+        $sql = odbc_fetch_array($consulta);
+		return $sql;
+	}
 
 	
+	protected function validar_admin_modelo($datos)
+	{
+		$consulta = odbc_prepare(mainModel::conectar(), "SELECT u.comper_codigo
+		FROM segu_usuario u 
+		join comand_personal p on u.comper_codigo = p.comper_codigo
+		and p.empr_codigo = '01'
+		where u.usua_bloqueo = '0'
+		and u.usua_vigencia = 'SI'
+		and u.usua_agente = 'SI'
+		and u.usua_clave = ?
+		and p.comper_agente_admin = 'SI'");
+		$sql = odbc_execute($consulta, array($datos["clave"]));
+		return $consulta;
+	}
+    protected function delete_comanda_detalle_autorizacion_modelo($datos)
+    {
+
+        $consulta = odbc_prepare(mainModel::conectar(), "UPDATE comand_comandadetalle SET cocode_cancelado='SI',usua_cancelado=?,usua_autoriza_cancelado=?,fecha_cancelado=now() WHERE comcom_codigo=? AND cocode_item=?; ");
+        $sql = odbc_execute($consulta, array($datos["usua_codigo"],$datos["usua_autoriza_cancelado"],$datos["comcom_codigo"],$datos["cocode_item"]));
+		$sql = odbc_num_rows($consulta);
+        
+        return $sql;
+    }
 }

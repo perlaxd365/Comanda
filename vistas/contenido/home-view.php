@@ -1,4 +1,4 @@
-<div class="cart-section mt-150 mb-150">
+<div class="cart-section mt-80 mb-150">
 	<div class="container">
 		<div class="card">
 			<div class="card-body">
@@ -20,6 +20,8 @@
 								</div>
 							</div>
 						</div>
+
+						
 						<div onclick="redirigir('pedActivoList');" style="cursor: pointer" class="col-sm-6">
 							<div class="card">
 								<div class="card-body">

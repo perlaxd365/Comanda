@@ -9,6 +9,13 @@ if (isset($_POST["comcom_codigo"])) {
 	$classDoc = new comandaControlador();
 	$est = $classDoc->data_comanda_controlador($_POST["comcom_codigo"]);
 	$filesL = $classDoc->data_comanda_detalle_controlador($_POST["comcom_codigo"]);
+	$numeroFilas = $classDoc->data_comanda_detalle_controlador($_POST["comcom_codigo"]);
+	$contadorFilas = 0;
+	while ($item = odbc_fetch_array($numeroFilas)) {
+		if ($item["cocode_atendido"] == "SI") {
+			$contadorFilas++;
+		}
+	}
 
 	while ($estatico = odbc_fetch_array($est)) {
 		$comcom_codigo = $estatico["comcom_codigo"];
@@ -17,21 +24,47 @@ if (isset($_POST["comcom_codigo"])) {
 	}
 
 
-
-
 ?>
 
 
 	<!-- check out section -->
-	<div class="checkout-section mt-150 mb-150">
+	<div class="checkout-section mt-80 mb-150">
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-8">
 
-					<div class="card-header">
-						<h6 class="font-weight-bold">Detalle Pedido de : <a href="#"><?php echo $comcom_apenom; ?></a> - Mesa : <a href="#"><?php echo $mesa; ?></a> </h6>
-						Eliminar <TEXT style="color: red;">(x)</TEXT> , Cortesía <TEXT style="color: green;"> (✓)</TEXT><br>
-						Espera <TEXT style="color: red;">(E)</TEXT> , Atendido <TEXT style="color: green;"> (A)</TEXT>
+					<div class="card-header row">
+						<div class="col-7">
+
+							<h6 class="font-weight-bold">Detalle Pedido de : <a href="#"><?php echo $comcom_apenom; ?></a> - Mesa : <a href="#"><?php echo $mesa; ?></a> </h6>
+
+							Acción: Eliminar <button type="submit" class="btn btn-outline-danger btn-sm">x</button> , Cortesía <button type="submit" class="btn btn-outline-success btn-sm">✓</button><br><br>
+
+							Estado: Espera <button type="button" class="btn btn-outline-danger btn-sm">E</button> , Atendido <button type="button" class="btn btn-outline-success  btn-sm">A</button>
+
+						</div>
+						<div class="col-5" style="padding-top: 40px; padding-left: 100px;">
+							<?php
+							if ($contadorFilas == 0) {
+							?>
+								<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="deleteComanda" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
+									<input type="hidden" name="comcom_codigo_eliminar_comanda" value="<?php echo $comcom_codigo; ?>">
+
+									<input type="hidden" name="usua_codigo_eliminar_comanda" value="<?php echo $_SESSION['usua_codigo']; ?>">
+									<button type="submit" class="btn btn-outline-danger">Eliminar comanda <img width="20" height="20" src="https://cdn-icons-png.flaticon.com/512/812/812853.png" alt=""></button>
+								</form>
+							<?php
+							} else {
+							?>
+								<button type="button" onclick="eliminarComanda('<?php echo $comcom_codigo; ?>', '<?php echo $_SESSION['usua_codigo']; ?>')" class="btn btn-outline-danger">Eliminar comanda <img width="20" height="20" src="https://cdn-icons-png.flaticon.com/512/812/812853.png" alt=""></button>
+
+							<?php
+							}
+							?>
+
+
+
+						</div>
 					</div>
 
 					<div style="overflow-y:scroll;height:600px;">
@@ -72,16 +105,40 @@ if (isset($_POST["comcom_codigo"])) {
 										</td>
 
 										<td><button type="button" onclick='llenarObser(<?php echo $rows["comcom_codigo"] ?>,<?php echo $rows["cocode_item"]; ?>);' class="btn btn-outline-success" data-toggle="modal" data-target="#modalObservacion">+</button></td>
-										<td><button type="button" class="btn btn-outline-success <?php if($rows["cocode_atendido"]=="SI"){echo "active";}?>">A</button></td>
+										<td>
+											<?php if ($rows["cocode_atendido"] == "SI") {
+											?>
+												<button type="button" class="btn btn-outline-success">A</button>
+											<?php
+											} else {
+											?>
+												<button type="button" class="btn btn-outline-danger">E</button>
+											<?php
+											} ?>
+
+										</td>
 										<td>
 											<div class="row">
-												<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="delete" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
-													<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
-													<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
-													<input type="hidden" name="usua_codigo" value="<?php echo $_SESSION['usua_codigo']; ?>">
-													<input type="hidden" name="eliminarProducto">
-													<button type="submit" class="btn btn-outline-danger">x</button>
-												</form>
+
+												<?php if ($rows["cocode_atendido"] == "SI" && $rows["cocode_enviado"] == "SI") {
+												?>
+
+													<button type="button" onclick="eliminarProductoAtendido('<?php echo $rows['comcom_codigo']; ?>','<?php echo $rows['cocode_item']; ?>','<?php echo $_SESSION['usua_codigo']; ?>');" class="btn btn-outline-danger">x</button>
+
+
+												<?php
+												} else {
+												?>
+													<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="delete" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
+														<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
+														<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
+														<input type="hidden" name="usua_codigo" value="<?php echo $_SESSION['usua_codigo']; ?>">
+														<input type="hidden" name="eliminarProducto">
+														<button type="submit" class="btn btn-outline-danger">x</button>
+													</form>
+												<?php
+												} ?>
+
 												<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="save" class="cortesiaAjax" autocomplete="off" enctype="multipart/form-data">
 													<input type="hidden" name="comcom_codigo" value="<?php echo $rows["comcom_codigo"]; ?>">
 													<input type="hidden" name="cocode_item" value="<?php echo $rows["cocode_item"]; ?>">
@@ -139,7 +196,6 @@ if (isset($_POST["comcom_codigo"])) {
 				</div>
 			</div>
 			<br>
-			<br>
 			<div class="row">
 				<input type="submit" onclick="window.location='<?php echo SERVERURL ?>pedActivoList';" style="color: white; " class="black" value="Atrás">
 
@@ -147,11 +203,18 @@ if (isset($_POST["comcom_codigo"])) {
 					<input hidden type="text" name="comcom_codigo" value="<?php echo $comcom_codigo ?>">
 					<input type="submit" style="color: white;" class="boxed-btn black" value="Agregar">
 				</form>
-				<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="save" class="FormularioPrecuentaAjax" autocomplete="off" enctype="multipart/form-data">
+				<?php
+				if ($contador > 0) {
+				?>
+					<form action="<?php echo SERVERURL; ?>ajax/comandaAjax.php" method="POST" data-form="save" class="FormularioPrecuentaAjax" autocomplete="off" enctype="multipart/form-data">
 
-					<input hidden type="text" name="comcom_codigo_precuenta" value="<?php echo $comcom_codigo ?>">
-					<input type="submit" style="color: white;" class="boxed-btn black" value="Precuenta">
-				</form>
+						<input hidden type="text" name="comcom_codigo_precuenta" value="<?php echo $comcom_codigo ?>">
+						<input type="submit" style="color: white;" class="boxed-btn black" value="Precuenta">
+					</form>
+				<?php
+				}
+				?>
+
 				<div id="RespuestaAjax" class="RespuestaAjax"></div>
 			</div>
 		</div>
@@ -216,6 +279,133 @@ if (isset($_POST["comcom_codigo"])) {
 ?>
 
 <script>
+	function eliminarProductoAtendido(comcom_codigo, cocode_item, usua_codigo) {
+		swal({
+			title: 'Producto Atendido',
+			text: 'Necesitas permiso de administrador para cancelar producto',
+			input: 'password',
+			showCancelButton: true,
+			confirmButtonText: 'Cancelar Producto',
+			type: 'warning',
+			showLoaderOnConfirm: true,
+			preConfirm: function(email) {
+				return new Promise(function(resolve, reject) {
+					setTimeout(function() {
+						if (email === 'taken@example.com') {
+							reject('This email is already taken.')
+						} else {
+							resolve()
+						}
+					}, 2000)
+				})
+			},
+			allowOutsideClick: false
+		}).then(function(claveInput) {
+
+
+
+			var url = "ajax/comandaAjax.php";
+			$.ajax({
+				type: 'POST',
+				url: url,
+				data: {
+					eliminar_atendido: 'SI',
+					clave: claveInput,
+					comcom_codigo_atendido: comcom_codigo,
+					cocode_item_atendido: cocode_item,
+					usua_codigo_atendido: usua_codigo
+
+				},
+				error: function() {
+					$("#RespuestaAjax").attr("disabled", false);
+					$("#RespuestaAjax").html(respuesta);
+				},
+				success: function(respuesta) {
+					$("#RespuestaAjax").attr("disabled", false);
+					$("#RespuestaAjax").html(respuesta);
+				}
+			})
+
+
+		})
+
+	}
+
+	function eliminarComanda(comcom_codigo, usua_codigo) {
+		var comper_codigo = '';
+		swal({
+			title: 'Existen productos atendidos',
+			text: 'Necesitas permiso de administrador.',
+			input: 'password',
+			showCancelButton: true,
+			confirmButtonText: 'Cancelar Producto',
+			type: 'warning',
+			showLoaderOnConfirm: true,
+			preConfirm: function(pass) {
+				return new Promise(function(resolve, reject) {
+					setTimeout(function() {
+
+						var url = "ajax/comandaAjax.php";
+						$.ajax({
+							type: 'POST',
+							url: url,
+							data: {
+								clave_verficar: pass
+
+							},
+							error: function() {
+								$("#RespuestaAjax").attr("disabled", false);
+								$("#RespuestaAjax").html(respuesta);
+							},
+							success: function(respuesta) {
+								if (respuesta === "error") {
+									swal(
+										'Error',
+										'Usuario no existente / No tiene permisos',
+										'warning'
+									)
+								} else {
+
+									comper_codigo=respuesta;
+									resolve();
+
+								}
+							}
+						})
+					}, 2000)
+				})
+			},
+			allowOutsideClick: false
+		}).then(function(claveInput) {
+
+
+
+			var url = "ajax/comandaAjax.php";
+			$.ajax({
+				type: 'POST',
+				url: url,
+				data: {
+					comcom_codigo_eliminar_comanda: comcom_codigo,
+					usua_codigo_eliminar_comanda: usua_codigo,
+					admin_codigo_eliminar: comper_codigo,
+					clave: claveInput
+
+				},
+				error: function() {
+					$("#RespuestaAjax").attr("disabled", false);
+					$("#RespuestaAjax").html(respuesta);
+				},
+				success: function(respuesta) {
+					$("#RespuestaAjax").attr("disabled", false);
+					$("#RespuestaAjax").html(respuesta);
+				}
+			})
+
+
+		})
+
+	}
+
 	function enviarForm() {
 		document.getElementById("botonForm").click();
 	}
